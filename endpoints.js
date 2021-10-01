@@ -80,7 +80,7 @@ async function buyPatent(teamID,houseID){
 async function increasePot(teamID,cash){
   if(functions.subtractCoins(teamID, cash))
     functions.addCoins(potID, cash)
-  //TODO se não tiver dinheiro
+    //TODO se não tiver dinheiro
 }
 
 async function receivePot(teamID){
@@ -90,8 +90,8 @@ async function receivePot(teamID){
 
   if(Teams.length && error==null){
     if(functions.addCoins(teamID, Teams[0].CASH))
-      setCoins(potID, 0)
-    //TODO se não tiver dinheiro
+      functions.setCoins(potID, 0)
+      //TODO se não tiver dinheiro
 
   }
 }
