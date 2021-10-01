@@ -79,6 +79,39 @@ async function setCoins(teamID,cash){
   return true
 }
 
+async function buyCart(teamID, cash, cart) {
+  if (teamID < 0 || cash < 0 || cart < 0) {
+    return false;
+  }
+  let { data: Teams, error } = await supabase
+    .from('Teams')
+    .select("*").eq('IDTEAM', teamID)
+  if(Teams.length && error === NULL) {
+    cart.forEach(component => {
+      let { data: Components, error } = await supabase
+        .from('Components')
+        .select("*").eq('IDCOMPONENT', component)
+      Teams[0].CASH -= Components[0].PRICE;
+      console.log(Components[0].PRICE, Teams[0].CASH);
+    });
+    if (Teams[0].CASH > 0) {
+      const { updated, update_error } = await supabase
+        .from('Teams')
+        .update({ CASH: Teams[0].CASH })
+        .eq('IDTEAM', teamID)
+    } else {
+      // TODO equipa não tem dinheiro suficiente
+    }
+  } else {
+    // REVIEW log file
+    if (error != NULL) {
+      
+    } else {
+      // NOTE equipa não encontrada
+    }
+  }
+}
+
 async function move_team(teamID){
   if(teamID < 0){
     return;
