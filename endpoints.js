@@ -1,56 +1,7 @@
 import { supabase } from './settings.js'
 import * as functions from './functions.js'
 
-async function addCoins(teamID,cash){
-  if(teamID < 0 || cash<0){
-    return;
-  }
-  let { data: Teams, error } = await supabase
-  .from('Teams')
-  .select('*').eq('IDTEAM', teamID)
-  if(Teams.length && error==null){
-    Teams[0].CASH+=cash;
-    console.log(Teams[0].CASH)
-    const { updated, update_error } = await supabase
-    .from('Teams')
-    .update({ CASH: Teams[0].CASH })
-    .eq('IDTEAM', teamID)
-  }else{
-    //REVIEW gerar log file
-    if(error!=null){
-
-    }else{
-        //NOTE equipa não encontrada
-    }
-  }
-}
-
-async function subtractCoins(teamID,cash){
-  if(teamID < 0 || cash<0){
-    return;
-  }
-  let { data: Teams, error } = await supabase
-  .from('Teams')
-  .select('*').eq('IDTEAM', teamID)
-
-  if(Teams.length && error==null){
-    Teams[0].CASH=(Teams[0].CASH-=cash) <0 ? 0: Teams[0].CASH;
-    const { updated, update_error } = await supabase
-    .from('Teams')
-    .update({ CASH: Teams[0].CASH })
-    .eq('IDTEAM', teamID)
-    //NOTE Checkar resposta?
-  }else{
-    //REVIEW gerar log file
-    if(error!=null){
-
-    }else{
-      //NOTE equipa não encontrada
-    }
-  }
-}
-
-async function move_team(teamID){
+async function throwDices(teamID){
   if(teamID < 0){
     return;
   }
@@ -58,7 +9,7 @@ async function move_team(teamID){
   .from('Teams')
   .select('*').eq('IDTEAM', teamID)
 
-  if(Teams.length && error==null){
+  if(Teams.length && error===null){
     var dices=[];
     dices.push(functions.getRandomInt(1,7))
     dices.push(functions.getRandomInt(1,7))
@@ -88,9 +39,45 @@ async function move_team(teamID){
   }
 }
 
+async function transferCoins(minusTeam,plusTeam,cash){
+  if(minusTeam < 0 || plusTeam < 0 || cash < 0){
+    return;
+  }
+
+  let { data: Teams, error } = await supabase
+  .from('Teams')
+  .select('*').in('IDTEAM', [minusTeam,plusTeam])
+
+  if(Teams.length){
+    subtractCoins(Teams[0],cash);
+    addCoins(Teams[1],cash);
+  }
+}
+
+async function buyPatent(teamID,houseID){
+  if(teamID < 0 || houseID < 0){
+    return;
+  }
+  let { data: Teams, error_team } = await supabase
+  .from('Teams')
+  .select('*').eq('IDTEAM', houseID)
+  let { data: Houses, error_house } = await supabase
+  .from('Houses')
+  .select('*').eq('IDHOUSE', houseID)
+  if(Houses[0].TYPE==="house" && Teams.length){
+    subtractCoins(Teams[0],Houses[0].PRICE);
+    const { updated, update_error } = await supabase
+    .from('Houses')
+    .update({ IDTEAM: house })
+    .eq('IDTEAM', teamID)
+  }
+}
+
 /*addCoins(1,99);
 addCoins(12,99);
 addCoins(12,-99);
-subtractCoins(1,5);*/
-move_team(1);
+subtractCoins(1,5);
+throwDices(1);
+transferCoins(1,2);*/
+buyPatent(1,1)
 console.log(functions.logTime());
