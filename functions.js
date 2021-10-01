@@ -36,3 +36,13 @@ export function subtractCoins(Teams,cash){
     //NOTE checkar resposta
     
 }
+
+export function setCoins(Teams,cash){
+    
+    const { updated, update_error } = await supabase
+    .from('Teams')
+    .update({ CASH: cash })
+    .eq('IDTEAM', Teams.IDTEAM)
+    //NOTE checkar resposta
+    
+}
