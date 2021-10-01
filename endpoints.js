@@ -4,7 +4,7 @@ import * as functions from './functions.js'
 var potID = 0;
 var BOARD_SIZE = 24;
 
-async function throwDices(teamID){
+export async function throwDices(teamID){
 
   if(typeof teamID==='undefined' ||teamID < 0){
     return;
@@ -92,7 +92,7 @@ async function increasePot(teamID,cash){
   }
 }
 
-async function receivePot(teamID){
+export async function receivePot(teamID){
   let { data: Teams, error } = await supabase
   .from('Teams')
   .select('*').eq('IDTEAM', potID)
