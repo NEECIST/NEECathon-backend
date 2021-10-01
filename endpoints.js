@@ -1,6 +1,7 @@
 import { supabase } from './settings.js'
 import * as functions from './functions.js'
 
+var potID = 0;
 
 async function throwDices(teamID){
 
@@ -74,10 +75,12 @@ async function buyPatent(teamID,houseID){
     .update({ IDTEAM: house })
     .eq('IDTEAM', teamID)
 
-async function increasePot(teamID,cash){
-  if(subtractCoins(teamID, cash))
-    addCoins(potID, cash)
-  //TODO se não tiver dinheiro
+    async function increasePot(teamID,cash){
+      if(subtractCoins(teamID, cash))
+        addCoins(potID, cash)
+      //TODO se não tiver dinheiro
+    }
+  }
 }
 
 async function receivePot(teamID){
