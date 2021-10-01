@@ -74,13 +74,13 @@ async function buyPatent(teamID,houseID){
     .from('Houses')
     .update({ IDTEAM: house })
     .eq('IDTEAM', teamID)
-
-    async function increasePot(teamID,cash){
-      if(subtractCoins(teamID, cash))
-        addCoins(potID, cash)
-      //TODO se não tiver dinheiro
-    }
   }
+}
+
+async function increasePot(teamID,cash){
+  if(subtractCoins(teamID, cash))
+    addCoins(potID, cash)
+  //TODO se não tiver dinheiro
 }
 
 async function receivePot(teamID){
@@ -95,6 +95,8 @@ async function receivePot(teamID){
 
   }
 }
+
+
 
 /*addCoins(1,99);
 addCoins(12,99);
