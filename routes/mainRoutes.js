@@ -6,7 +6,7 @@ import * as endpoints from "../endpoints.js";
 mainRoutes.route("/addCoins").post(function (req, res) {
   console.log(req.body);
 
-  endpoints.addCoins(req.body.teamId, parseInt(req.body.value));
+  endpoints.increasePot(req.body.teamId, parseInt(req.body.value));
 
   res.json("Sucess");
 });
