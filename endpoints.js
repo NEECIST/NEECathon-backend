@@ -53,8 +53,8 @@ async function transferCoins(minusTeam,plusTeam,cash){
   .select('*').in('IDTEAM', [minusTeam,plusTeam])
 
   if(Teams.length){
-    subtractCoins(Teams[0],cash);
-    addCoins(Teams[1],cash);
+    functions.subtractCoins(Teams[0],cash);
+    functions.addCoins(Teams[1],cash);
   }
 }
 
@@ -69,7 +69,7 @@ async function buyPatent(teamID,houseID){
   .from('Houses')
   .select('*').eq('IDHOUSE', houseID)
   if(Houses[0].TYPE==="house" && Teams.length){
-    subtractCoins(Teams[0],Houses[0].PRICE);
+    functions.subtractCoins(Teams[0],Houses[0].PRICE);
     const { updated, update_error } = await supabase
     .from('Houses')
     .update({ IDTEAM: house })
@@ -78,8 +78,8 @@ async function buyPatent(teamID,houseID){
 }
 
 async function increasePot(teamID,cash){
-  if(subtractCoins(teamID, cash))
-    addCoins(potID, cash)
+  if(functions.subtractCoins(teamID, cash))
+    functions.addCoins(potID, cash)
   //TODO se não tiver dinheiro
 }
 
@@ -89,7 +89,7 @@ async function receivePot(teamID){
   .select('*').eq('IDTEAM', potID)
 
   if(Teams.length && error==null){
-    if(addCoins(teamID, Teams[0].CASH))
+    if(functions.addCoins(teamID, Teams[0].CASH))
       setCoins(potID, 0)
     //TODO se não tiver dinheiro
 
