@@ -9,9 +9,9 @@ export function logTime(){
     minute: "numeric"});
 }
 
-export function addCoins(Teams,cash){
+export async function addCoins(Teams,cash){
     if(cash<0){
-        return;
+        return false;
     }
 
     Teams.CASH+=cash;
@@ -21,11 +21,12 @@ export function addCoins(Teams,cash){
     .eq('IDTEAM', Teams.IDTEAM)
     //NOTE checkar resposta
 
+    return true;
 }
 
-export function subtractCoins(Teams,cash){
+export async function subtractCoins(Teams,cash){
     if(cash<0){
-        return;
+        return false;
     }
 
     Teams.CASH=(Teams.CASH-=cash) <0 ? 0: Teams.CASH;  //REVIEW impedir ação se não for possível subtrair
@@ -35,14 +36,15 @@ export function subtractCoins(Teams,cash){
     .eq('IDTEAM', Teams.IDTEAM)
     //NOTE checkar resposta
     
+    return true;
 }
 
-export function setCoins(Teams,cash){
+export async function setCoins(Teams,cash){
     
     const { updated, update_error } = await supabase
     .from('Teams')
     .update({ CASH: cash })
     .eq('IDTEAM', Teams.IDTEAM)
     //NOTE checkar resposta
-    
+    return true;
 }
