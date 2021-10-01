@@ -10,7 +10,7 @@ export function logTime(){
 }
 
 export async function addCoins(Teams,cash){
-    if(cash<0){
+    if(typeof cash==='undefined' || typeof Teams==='undefined' || cash<0){
         return false;
     }
 
@@ -25,7 +25,7 @@ export async function addCoins(Teams,cash){
 }
 
 export async function subtractCoins(Teams,cash){
-    if(cash<0){
+    if(typeof Teams==='undefined' || typeof cash==='undefined' || cash<0){
         return false;
     }
 
@@ -40,6 +40,9 @@ export async function subtractCoins(Teams,cash){
 }
 
 export async function setCoins(Teams,cash){
+    if(typeof Teams==='undefined' || typeof cash==='undefined'){    //NOTE verificar se Teams.cash é undefined?
+        return false;
+    }
     
     const { updated, update_error } = await supabase
     .from('Teams')

@@ -5,14 +5,14 @@ var potID = 0;
 
 async function throwDices(teamID){
 
-  if(teamID < 0){
+  if(typeof teamID==='undefined' ||teamID < 0){
     return;
   }
   let { data: Teams, error } = await supabase
   .from('Teams')
   .select('*').eq('IDTEAM', teamID)
 
-  if(Teams.length && error===null){
+  if(typeof Teams!=='undefined' && Teams.length && error===null){
     var dices=[];
     dices.push(functions.getRandomInt(1,7))
     dices.push(functions.getRandomInt(1,7))
@@ -44,7 +44,7 @@ async function throwDices(teamID){
 
 
 async function transferCoins(minusTeam,plusTeam,cash){
-  if(minusTeam < 0 || plusTeam < 0 || cash < 0){
+  if(typeof minusTeam==='undefined' || typeof plusTeam==='undefined' || typeof cash==='undefined' || minusTeam < 0 || plusTeam < 0 || cash < 0){
     return;
   }
 
@@ -52,14 +52,14 @@ async function transferCoins(minusTeam,plusTeam,cash){
   .from('Teams')
   .select('*').in('IDTEAM', [minusTeam,plusTeam])
 
-  if(Teams.length){
+  if(typeof Teams!=='undefined' && Teams.length){
     functions.subtractCoins(Teams[0],cash);
     functions.addCoins(Teams[1],cash);
   }
 }
 
 async function buyPatent(teamID,houseID){
-  if(teamID < 0 || houseID < 0){
+  if(typeof teamID==='undefined' || typeof houseID==='undefined' || teamID < 0 || houseID < 0){
     return;
   }
   let { data: Teams, error_team } = await supabase
@@ -68,7 +68,7 @@ async function buyPatent(teamID,houseID){
   let { data: Houses, error_house } = await supabase
   .from('Houses')
   .select('*').eq('IDHOUSE', houseID)
-  if(Houses[0].TYPE==="house" && Teams.length){
+  if(typeof Houses!=='undefined' && typeof Teams!=='undefined' && Houses[0].TYPE==="house" && Teams.length){
     functions.subtractCoins(Teams[0],Houses[0].PRICE);
     const { updated, update_error } = await supabase
     .from('Houses')
@@ -80,7 +80,7 @@ async function buyPatent(teamID,houseID){
 async function increasePot(teamID,cash){
   if(functions.subtractCoins(teamID, cash))
     functions.addCoins(potID, cash)
-  //TODO se não tiver dinheiro
+    //TODO se não tiver dinheiro
 }
 
 async function receivePot(teamID){
@@ -88,10 +88,10 @@ async function receivePot(teamID){
   .from('Teams')
   .select('*').eq('IDTEAM', potID)
 
-  if(Teams.length && error==null){
+  if(typeof Teams!=='undefined' && Teams.length && error===null){
     if(functions.addCoins(teamID, Teams[0].CASH))
-      setCoins(potID, 0)
-    //TODO se não tiver dinheiro
+      functions.setCoins(potID, 0)
+      //TODO se não tiver dinheiro
 
   }
 }
