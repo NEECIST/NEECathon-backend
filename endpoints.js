@@ -2,6 +2,7 @@ import { supabase } from './settings.js'
 import * as functions from './functions.js'
 
 var potID = 0;
+var BOARD_SIZE = 24;
 
 async function throwDices(teamID){
 
@@ -16,7 +17,7 @@ async function throwDices(teamID){
     var dices=[];
     dices.push(functions.getRandomInt(1,7))
     dices.push(functions.getRandomInt(1,7))
-    if(dices[0]===dices[1]){
+    /*if(dices[0]===dices[1]){
       dices.push(functions.getRandomInt(1,7))
       dices.push(functions.getRandomInt(1,7))
       if(dices[2]===dices[3]){
@@ -28,12 +29,12 @@ async function throwDices(teamID){
           .from('Teams')
           .update({ HOUSE: house })
           .eq('IDTEAM', teamID)
-          return; //NOTE vai para a prisão
+          return; //NOTE DEPRECATED doubles
         }
       }
-    }
-    var house = (Teams[0].HOUSE + dices.reduce((a,b) => a+b, 0)) >= 40 ? (Teams[0].HOUSE + dices.reduce((a,b) => a+b, 0))-40 : Teams[0].HOUSE + dices.reduce((a,b) => a+b, 0)
-    console.log(house)
+    }*/
+    var house = (Teams[0].HOUSE + dices.reduce((a,b) => a+b, 0)) >= BOARD_SIZE ? (Teams[0].HOUSE + dices.reduce((a,b) => a+b, 0))-BOARD_SIZE : Teams[0].HOUSE + dices.reduce((a,b) => a+b, 0)
+    console.log('throwDices:'+house)
     const { updated, update_error } = await supabase
     .from('Teams')
     .update({ HOUSE: house })
@@ -53,8 +54,9 @@ async function transferCoins(minusTeam,plusTeam,cash){
   .select('*').in('IDTEAM', [minusTeam,plusTeam])
 
   if(typeof Teams!=='undefined' && Teams.length){
-    functions.subtractCoins(Teams[0],cash);
-    functions.addCoins(Teams[1],cash);
+    if(functions.subtractCoins(Teams[0],cash) === true){
+      functions.addCoins(Teams[1],cash);
+    }
   }
 }
 
@@ -68,19 +70,26 @@ async function buyPatent(teamID,houseID){
   let { data: Houses, error_house } = await supabase
   .from('Houses')
   .select('*').eq('IDHOUSE', houseID)
-  if(typeof Houses!=='undefined' && typeof Teams!=='undefined' && Houses[0].TYPE==="house" && Teams.length){
-    functions.subtractCoins(Teams[0],Houses[0].PRICE);
-    const { updated, update_error } = await supabase
-    .from('Houses')
-    .update({ IDTEAM: house })
-    .eq('IDTEAM', teamID)
+  if(Houses[0].IDTEAM===null){
+    if(typeof Houses!=='undefined' && typeof Teams!=='undefined' && Houses[0].TYPE==="house" && Teams.length){
+      functions.subtractCoins(Teams[0],Houses[0].PRICE);
+      console.log(Houses)
+      const { updated, update_error } = await supabase
+      .from('Houses')
+      .update({ IDTEAM: teamID })
+      .eq('IDHOUSE', houseID)
+    }
+  }else{
+    console.log("Patent already bought");
   }
 }
 
 async function increasePot(teamID,cash){
-  if(functions.subtractCoins(teamID, cash))
+  if(functions.subtractCoins(teamID, cash)){
     functions.addCoins(potID, cash)
+  }else{
     //TODO se não tiver dinheiro
+  }
 }
 
 async function receivePot(teamID){
@@ -89,10 +98,11 @@ async function receivePot(teamID){
   .select('*').eq('IDTEAM', potID)
 
   if(typeof Teams!=='undefined' && Teams.length && error===null){
-    if(functions.addCoins(teamID, Teams[0].CASH))
+    if(functions.addCoins(teamID, Teams[0].CASH)){
       functions.setCoins(potID, 0)
-      //TODO se não tiver dinheiro
-
+    }else{
+      //TODO se não tiver dinheiro  
+    }
   }
 }
 
@@ -102,7 +112,8 @@ async function receivePot(teamID){
 addCoins(12,99);
 addCoins(12,-99);
 subtractCoins(1,5);
+transferCoins(1,2);
 throwDices(1);
-transferCoins(1,2);*/
-buyPatent(1,1)
+buyPatent(1,1)*/
 console.log(functions.logTime());
+functions.hash_string("oi");

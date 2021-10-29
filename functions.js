@@ -1,3 +1,5 @@
+import { supabase } from './settings.js'
+
 export function getRandomInt(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
@@ -28,15 +30,21 @@ export async function subtractCoins(Teams,cash){
     if(typeof Teams==='undefined' || typeof cash==='undefined' || cash<0){
         return false;
     }
-
-    Teams.CASH=(Teams.CASH-=cash) <0 ? 0: Teams.CASH;  //REVIEW impedir ação se não for possível subtrair
-    const { updated, update_error } = await supabase
-    .from('Teams')
-    .update({ CASH: Teams.CASH })
-    .eq('IDTEAM', Teams.IDTEAM)
-    //NOTE checkar resposta
-    
-    return true;
+    console.log('Antes:'+Teams.CASH)
+    if(Teams.CASH-cash>0){
+        Teams.CASH=(Teams.CASH-=cash) <0 ? 0: Teams.CASH;  //REVIEW impedir ação se não for possível subtrair
+        console.log('Depois:'+Teams.CASH)
+        const { updated, update_error } = await supabase
+        .from('Teams')
+        .update({ CASH: Teams.CASH })
+        .eq('IDTEAM', Teams.IDTEAM)
+        //NOTE checkar resposta
+        
+        return true;
+    }else{
+        console.log("Team doesn´t have enough money");
+        return false;
+    }
 }
 
 export async function setCoins(Teams,cash){
@@ -50,4 +58,14 @@ export async function setCoins(Teams,cash){
     .eq('IDTEAM', Teams.IDTEAM)
     //NOTE checkar resposta
     return true;
+}
+
+export async function hash_string(input){
+    const { createHmac } = await import('crypto');
+
+    const secret = 'abcdefg';
+    const hash = createHmac('sha256', secret)
+                .update(input)
+                .digest('hex');
+    console.log(hash);
 }
