@@ -85,28 +85,38 @@ async function buyPatent(teamID,houseID){
 }
 
 async function increasePot(teamID,cash){
-
-  if(functions.subtractCoins(teamID, cash)){
-    functions.addCoins(potID, cash)
-  }else{
-    //TODO se não tiver dinheiro  
-  }
-}
-
-async function receivePot(teamID){
   let { data: Teams, error } = await supabase
   .from('Teams')
-  .select('*').eq('IDTEAM', potID)
+  .select('*').in('IDTEAM', [teamID, potID])
 
   if(typeof Teams!=='undefined' && Teams.length && error===null){
-    if(functions.addCoins(teamID, Teams[0].CASH)){
-      functions.setCoins(potID, 0)
+    var Team = (Teams[0].IDTEAM===teamID) ? Teams[0] : Teams[1];
+    var Pot = (Teams[0].IDTEAM===potID) ? Teams[0] : Teams[1];
+
+    if(functions.subtractCoins(Team, cash)){
+      functions.addCoins(Pot, cash)
     }else{
       //TODO se não tiver dinheiro  
     }
   }
 }
 
+async function receivePot(teamID){
+  let { data: Teams, error } = await supabase
+  .from('Teams')
+  .select('*').in('IDTEAM', [teamID, potID])
+
+  if(typeof Teams!=='undefined' && Teams.length && error===null){
+    var Team = (Teams[0].IDTEAM===teamID) ? Teams[0] : Teams[1];
+    var Pot = (Teams[0].IDTEAM===potID) ? Teams[0] : Teams[1];
+
+    if(functions.addCoins(Team, Pot.CASH)){
+      functions.setCoins(Pot, 0)
+    }else{
+      //TODO se não tiver dinheiro  
+    }
+  }
+}
 
 receivePot(2);
 
