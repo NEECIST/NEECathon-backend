@@ -85,10 +85,11 @@ async function buyPatent(teamID,houseID){
 }
 
 async function increasePot(teamID,cash){
+
   if(functions.subtractCoins(teamID, cash)){
     functions.addCoins(potID, cash)
   }else{
-    //TODO se não tiver dinheiro
+    //TODO se não tiver dinheiro  
   }
 }
 
@@ -107,13 +108,7 @@ async function receivePot(teamID){
 }
 
 
+receivePot(2);
 
-/*addCoins(1,99);
-addCoins(12,99);
-addCoins(12,-99);
-subtractCoins(1,5);
-transferCoins(1,2);
-throwDices(1);
-buyPatent(1,1)*/
 console.log(functions.logTime());
 functions.hash_string("oi");
