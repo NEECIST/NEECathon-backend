@@ -9,11 +9,9 @@ async function throwDices(teamID){
   if(typeof teamID==='undefined' ||teamID < 0){
     return;
   }
-  let { data: Teams, error } = await supabase
-  .from('Teams')
-  .select('*').eq('IDTEAM', teamID)
+  var Teams = await functions.getTeam(teamID);
 
-  if(typeof Teams!=='undefined' && Teams.length && error===null){
+  if(typeof Teams!=='undefined'){
     var dices=[];
     dices.push(functions.getRandomInt(1,7))
     dices.push(functions.getRandomInt(1,7))
@@ -33,7 +31,7 @@ async function throwDices(teamID){
         }
       }
     }*/
-    var house = (Teams[0].HOUSE + dices.reduce((a,b) => a+b, 0)) >= BOARD_SIZE ? (Teams[0].HOUSE + dices.reduce((a,b) => a+b, 0))-BOARD_SIZE : Teams[0].HOUSE + dices.reduce((a,b) => a+b, 0)
+    var house = (Teams.HOUSE + dices.reduce((a,b) => a+b, 0)) >= BOARD_SIZE ? (Teams.HOUSE + dices.reduce((a,b) => a+b, 0))-BOARD_SIZE : Teams.HOUSE + dices.reduce((a,b) => a+b, 0)
     console.log('throwDices:'+house)
     const { updated, update_error } = await supabase
     .from('Teams')
@@ -49,13 +47,14 @@ async function transferCoins(minusTeam,plusTeam,cash){
     return;
   }
 
-  let { data: Teams, error } = await supabase
-  .from('Teams')
-  .select('*').in('IDTEAM', [minusTeam,plusTeam])
+  var Teams = await functions.getTeams([minusTeam, plusTeam]);
 
   if(typeof Teams!=='undefined' && Teams.length){
-    if(functions.subtractCoins(Teams[0],cash) === true){
-      functions.addCoins(Teams[1],cash);
+    var MTeam = (Teams[0].IDTEAM===minusTeam) ? Teams[0] : Teams[1];
+    var PTeam = (Teams[0].IDTEAM===plusTeam) ? Teams[0] : Teams[1];
+
+    if(functions.subtractCoins(MTeam, cash)){
+      functions.addCoins(PTeam, cash);
     }
   }
 }
@@ -64,15 +63,13 @@ async function buyPatent(teamID,houseID){
   if(typeof teamID==='undefined' || typeof houseID==='undefined' || teamID < 0 || houseID < 0){
     return;
   }
-  let { data: Teams, error_team } = await supabase
-  .from('Teams')
-  .select('*').eq('IDTEAM', houseID)
+  var Teams = await functions.getTeam(teamID);
   let { data: Houses, error_house } = await supabase
   .from('Houses')
   .select('*').eq('IDHOUSE', houseID)
   if(Houses[0].IDTEAM===null){
-    if(typeof Houses!=='undefined' && typeof Teams!=='undefined' && Houses[0].TYPE==="house" && Teams.length){
-      functions.subtractCoins(Teams[0],Houses[0].PRICE);
+    if(typeof Houses!=='undefined' && typeof Teams!=='undefined' && Houses[0].TYPE==="house"){
+      functions.subtractCoins(Teams,Houses[0].PRICE);
       console.log(Houses)
       const { updated, update_error } = await supabase
       .from('Houses')
@@ -85,9 +82,7 @@ async function buyPatent(teamID,houseID){
 }
 
 async function increasePot(teamID,cash){
-  let { data: Teams, error } = await supabase
-  .from('Teams')
-  .select('*').in('IDTEAM', [teamID, potID])
+  var Teams = await functions.getTeams([teamID, potID]);
 
   if(typeof Teams!=='undefined' && Teams.length && error===null){
     var Team = (Teams[0].IDTEAM===teamID) ? Teams[0] : Teams[1];
@@ -102,11 +97,11 @@ async function increasePot(teamID,cash){
 }
 
 async function receivePot(teamID){
-  let { data: Teams, error } = await supabase
-  .from('Teams')
-  .select('*').in('IDTEAM', [teamID, potID])
+  //var Teams = functions.getTeam(teamID, potID);
 
-  if(typeof Teams!=='undefined' && Teams.length && error===null){
+  var Teams = await functions.getTeams([teamID, potID]);
+
+  if(typeof Teams!=='undefined' && Teams.length){
     var Team = (Teams[0].IDTEAM===teamID) ? Teams[0] : Teams[1];
     var Pot = (Teams[0].IDTEAM===potID) ? Teams[0] : Teams[1];
 
@@ -118,7 +113,6 @@ async function receivePot(teamID){
   }
 }
 
-receivePot(2);
 
 console.log(functions.logTime());
 functions.hash_string("oi");
