@@ -1,5 +1,5 @@
-import { supabase } from './settings.js'
-import * as functions from './functions.js'
+import { supabase } from '../settings.js'
+import * as functions from '../functions.js'
 
 var potID = 0;
 var BOARD_SIZE = 24;
@@ -44,7 +44,7 @@ export async function throwDices(teamID){
 }
 
 
-async function transferCoins(minusTeam,plusTeam,cash){
+export async function transferCoins(minusTeam,plusTeam,cash){
   if(typeof minusTeam==='undefined' || typeof plusTeam==='undefined' || typeof cash==='undefined' || minusTeam < 0 || plusTeam < 0 || cash < 0){
     return;
   }
@@ -60,7 +60,7 @@ async function transferCoins(minusTeam,plusTeam,cash){
   }
 }
 
-async function buyPatent(teamID,houseID){
+export async function buyPatent(teamID,houseID){
   if(typeof teamID==='undefined' || typeof houseID==='undefined' || teamID < 0 || houseID < 0){
     return;
   }
@@ -84,7 +84,7 @@ async function buyPatent(teamID,houseID){
   }
 }
 
-async function increasePot(teamID,cash){
+export async function increasePot(teamID,cash){
   if(functions.subtractCoins(teamID, cash)){
     functions.addCoins(potID, cash)
   }else{
@@ -106,14 +106,5 @@ export async function receivePot(teamID){
   }
 }
 
-
-
-/*addCoins(1,99);
-addCoins(12,99);
-addCoins(12,-99);
-subtractCoins(1,5);
-transferCoins(1,2);
-throwDices(1);
-buyPatent(1,1)*/
 console.log(functions.logTime());
 functions.hash_string("oi");
