@@ -4,7 +4,7 @@ import * as functions from './functions.js'
 var potID = 0;
 var BOARD_SIZE = 24;
 
-async function throwDices(teamID){
+export async function throwDices(teamID){
 
   if(typeof teamID==='undefined' ||teamID < 0){
     return;
@@ -42,7 +42,7 @@ async function throwDices(teamID){
 }
 
 
-async function transferCoins(minusTeam,plusTeam,cash){
+export async function transferCoins(minusTeam,plusTeam,cash){
   if(typeof minusTeam==='undefined' || typeof plusTeam==='undefined' || typeof cash==='undefined' || minusTeam < 0 || plusTeam < 0 || cash < 0){
     return;
   }
@@ -59,7 +59,7 @@ async function transferCoins(minusTeam,plusTeam,cash){
   }
 }
 
-async function buyPatent(teamID,houseID){
+export async function buyPatent(teamID,houseID){
   if(typeof teamID==='undefined' || typeof houseID==='undefined' || teamID < 0 || houseID < 0){
     return;
   }
@@ -97,8 +97,6 @@ async function increasePot(teamID,cash){
 }
 
 async function receivePot(teamID){
-  //var Teams = functions.getTeam(teamID, potID);
-
   var Teams = await functions.getTeams([teamID, potID]);
 
   if(typeof Teams!=='undefined' && Teams.length){
