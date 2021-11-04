@@ -27,6 +27,13 @@ shopRoutes.route("/products").get(function (req, res) {
 
 shopRoutes.route("/buy").post(function (req, res) {
   console.log(req.body);
+  var body = req.body;
+
+  var teamID = body.teamID;
+  var itemList = body.itemList;
+  if (typeof teamID === "undefined" || teamID < 0) {
+    return;
+  }
 });
 
 function compareIds(a, b) {
