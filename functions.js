@@ -11,6 +11,20 @@ export function logTime(){
     minute: "numeric"});
 }
 
+export async function getTeam (teamID) {
+    let { data: Team, error_team } = await supabase
+      .from('Teams')
+      .select('*').eq('IDTEAM', teamID)
+    return Team[0]
+}
+
+export async function getTeams (teamsID) {
+    let { data: Teams, error_team } = await supabase
+      .from('Teams')
+      .select('*').in('IDTEAM', teamsID)
+    return Teams
+}
+
 export async function addCoins(Team,cash){
     if(typeof cash==='undefined' || typeof Team==='undefined' || cash<0){
         return false;
