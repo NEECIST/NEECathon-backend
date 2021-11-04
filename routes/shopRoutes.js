@@ -4,14 +4,25 @@ export const shopRoutes = express.Router();
 import * as endpoints from "../endpoints/shopEndpoints.js";
 
 shopRoutes.route("/products").get(function (req, res) {
-  endpoints.productsList().then(function (prodList) {
-    const converted = prodList.map(function (prodList) {
-      return { id: prodList.IDCOMPONENT, title: prodList.NAME, image: prodList.IMAGE, price: prodList.PRICE, stock: prodList.STOCK, description: prodList.REFSHEET, idHouse: prodList.IDHOUSE };
+  endpoints
+    .productsList()
+    .then(function (prodList) {
+      //Checks if the function runned correctly to obtain the product list, else respond with {result: 'Fail', data: ''}
+      if (prodList.result === "Sucess") {
+        const converted = prodList.data.map(function (item) {
+          return { id: item.IDCOMPONENT, title: item.NAME, image: item.IMAGE, price: item.PRICE, stock: item.STOCK, description: item.REFSHEET, idHouse: item.IDHOUSE };
+        });
+        converted.sort(compareIds);
+        prodList.data = converted;
+
+        res.json(prodList);
+      } else {
+        res.json(prodList);
+      }
+    })
+    .catch(function (e) {
+      console.log(e);
     });
-    converted.sort(compareIds);
-    console.log(converted, "Routes");
-    res.json(converted);
-  });
 });
 
 shopRoutes.route("/buy").post(function (req, res) {
