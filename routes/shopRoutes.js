@@ -14,12 +14,16 @@ shopRoutes.route("/products").get(function (req, res) {
   });
 });
 
-function compareIds(a, b){
-    if ( a.id < b.id ){
-        return -1;
-      }
-      if ( a.id > b.id ){
-        return 1;
-      }
-      return 0;
+shopRoutes.route("/buy").post(function (req, res) {
+  console.log(req.body);
+});
+
+function compareIds(a, b) {
+  if (a.id < b.id) {
+    return -1;
+  }
+  if (a.id > b.id) {
+    return 1;
+  }
+  return 0;
 }
