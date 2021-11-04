@@ -12,17 +12,24 @@ export function logTime(){
 }
 
 export async function getTeam (teamID) {
-    let { data: Team, error_team } = await supabase
+    let { data: Team, error } = await supabase  //NOTE verificar se da erro
       .from('Teams')
       .select('*').eq('IDTEAM', teamID)
     return Team[0]
 }
 
 export async function getTeams (teamsID) {
-    let { data: Teams, error_team } = await supabase
+    let { data: Teams, error } = await supabase //NOTE verificar se da erro
       .from('Teams')
       .select('*').in('IDTEAM', teamsID)
     return Teams
+}
+
+export async function getPerson (personID) {
+    let { data: Person, error } = await supabase    //NOTE verificar se da erro
+      .from('Persons')
+      .select('*').eq('IDPERSON', personID)
+    return Person[0]
 }
 
 export async function addCoins(Team,cash){
@@ -44,10 +51,8 @@ export async function subtractCoins(Team,cash){
     if(typeof Team==='undefined' || typeof cash==='undefined' || cash<0){
         return false;
     }
-    console.log('Antes: '+Team.CASH)
     if(Team.CASH-cash>0){
         Team.CASH=(Team.CASH-=cash) <0 ? 0: Team.CASH;  //REVIEW impedir ação se não for possível subtrair
-        console.log('Depois: '+Team.CASH)
         const { updated, update_error } = await supabase
         .from('Teams')
         .update({ CASH: Team.CASH })

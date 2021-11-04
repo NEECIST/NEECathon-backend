@@ -4,6 +4,24 @@ import * as functions from './functions.js'
 var potID = 0;
 var BOARD_SIZE = 24;
 
+async function teamAddCoins(teamID, cash) {
+  var Team = await functions.getTeam(teamID);
+
+  functions.addCoins(Team, cash)
+}
+
+async function teamSubtractCoins(teamID, cash) {
+  var Team = await functions.getTeam(teamID);
+
+  functions.subtractCoins(Team, cash)
+}
+
+async function setCoinsTeam(teamID, cash) {
+  var Team = await functions.getTeam(teamID);
+
+  functions.setCoins(Team, cash)
+}
+
 export async function throwDices(teamID){
 
   if(typeof teamID==='undefined' ||teamID < 0){
@@ -71,7 +89,7 @@ export async function buyPatent(teamID,houseID){
     if(typeof Houses!=='undefined' && typeof Teams!=='undefined' && Houses[0].TYPE==="house"){
       functions.subtractCoins(Teams,Houses[0].PRICE);
       console.log(Houses)
-      const { updated, update_error } = await supabase
+      const { updated, update_error } = await supabase  //NOTE verificar se da erro
       .from('Houses')
       .update({ IDTEAM: teamID })
       .eq('IDHOUSE', houseID)
@@ -84,7 +102,7 @@ export async function buyPatent(teamID,houseID){
 async function increasePot(teamID,cash){
   var Teams = await functions.getTeams([teamID, potID]);
 
-  if(typeof Teams!=='undefined' && Teams.length && error===null){
+  if(typeof Teams!=='undefined' && Teams.length){
     var Team = (Teams[0].IDTEAM===teamID) ? Teams[0] : Teams[1];
     var Pot = (Teams[0].IDTEAM===potID) ? Teams[0] : Teams[1];
 
@@ -111,6 +129,61 @@ async function receivePot(teamID){
   }
 }
 
+async function addPlayer2Team(personID, teamID){
+  if(typeof personID==='undefined' || typeof teamID==='undefined' || personID < 0 || teamID < 0){
+    return;
+  }
 
+  var Person = await functions.getPerson(personID);
+  var Team = await functions.getTeam(teamID)
+
+  if(typeof Person!=='undefined' && typeof Team!=='undefined') {
+    if(Person.IDTEAM ===null) {
+      const { updated, update_error } = await supabase  //NOTE verificar se da erro
+      .from('Persons')
+      .update({ IDTEAM: teamID })
+      .eq('IDPERSON', personID)
+    }
+  }
+}
+
+async function removePlayerFromTeam(personID){
+  if(typeof personID==='undefined' || personID < 0){
+    return;
+  }
+
+  var Person = await functions.getPerson(personID);
+
+  if(typeof Person!=='undefined') {
+    if(Person.IDTEAM !==null) {
+      console.log("Removing...")
+      const { updated, update_error } = await supabase  //NOTE verificar se da erro
+      .from('Persons')
+      .update({ IDTEAM: null })
+      .eq('IDPERSON', personID)
+    }
+  }
+}
+
+async function transferPlayerFromTeam(personID, finalTeamID){
+  if(typeof personID==='undefined' || typeof finalTeamID==='undefined' || personID < 0 || finalTeamID < 0){
+    return;
+  }
+
+  var Person = await functions.getPerson(personID);
+  var Team = await functions.getTeam(finalTeamID)
+
+  if(typeof Person!=='undefined' && typeof Team!=='undefined') {
+    if(Person.IDTEAM !==null) {
+      const { updated, update_error } = await supabase  //NOTE verificar se da erro
+      .from('Persons')
+      .update({ IDTEAM: finalTeamID })
+      .eq('IDPERSON', personID)
+    }
+  }
+}
+
+
+transferPlayerFromTeam(1, 1)
 console.log(functions.logTime());
 functions.hash_string("oi");
