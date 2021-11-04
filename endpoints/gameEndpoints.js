@@ -84,7 +84,7 @@ export async function buyPatent(teamID,houseID){
   }
 }
 
-async function increasePot(teamID,cash){
+export async function increasePot(teamID,cash){
   let { data: Teams, error } = await supabase
   .from('Teams')
   .select('*').in('IDTEAM', [teamID, potID])
