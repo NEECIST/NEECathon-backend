@@ -212,8 +212,48 @@ export async function shuffleCards(){
   }
 }
 
+export async function updateStock(component_id, ammount) {
+  
+  var stock = ammount
 
+  let { error } = await supabase  //NOTE precisa de ser transaction
+    .rpc('updatestock', {
+      stock, 
+      component_id
+    })
 
-shuffleCards();
+  if (error) console.error(error)
+
+}
+
+export async function buyCart(teamID, cart) {
+
+  var Team = await functions.getTeam(teamID);
+  var Component = []
+  var cost = 0;
+
+  if (Team!==undefined) {                                       //NOTE usar locks ou transaction
+    for (var i = 0; i < cart.length; i++) {
+      Component.push(await functions.getComponent(cart[i].componentID))
+      if (Component[i]===undefined || Component[i].STOCK < cart[i].ammount) {
+        return false
+      }
+      cost += (Component[i].PRICE * cart[i].ammount);
+    }
+    if (cost > Team.CASH) return false
+
+    for (var i = 0; i < cart.length; i++) {
+      updateStock(Component[i].IDCOMPONENT, (Component[i].STOCK - cart[i].ammount))
+    }
+
+    functions.subtractCoins(Team, cost)
+  }
+}
+
+var cart = [ {componentID: 1, ammount: 3},
+  {componentID: 3, ammount: 1},
+  {componentID: 4, ammount: 1}
+]
+buyCart(2, cart)
 console.log(functions.logTime());
 functions.hash_string("oi");
