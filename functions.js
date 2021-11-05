@@ -32,6 +32,13 @@ export async function getPerson (personID) {
     return Person[0]
 }
 
+export async function getHouse (houseID) {
+    let { data: House, error } = await supabase    //NOTE verificar se da erro
+    .from('Houses')
+    .select('*').eq('IDHOUSE', houseID)
+    return House[0]
+}
+
 export async function addCoins(Team,cash){
     if(typeof cash==='undefined' || typeof Team==='undefined' || cash<0){
         return false;

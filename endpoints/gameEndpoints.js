@@ -3,20 +3,21 @@ import * as functions from '../functions.js'
 
 var potID = 0;
 var BOARD_SIZE = 24;
+var Deck = [];
 
-async function teamAddCoins(teamID, cash) {
+export async function teamAddCoins(teamID, cash) {
   var Team = await functions.getTeam(teamID);
 
   functions.addCoins(Team, cash)
 }
 
-async function teamSubtractCoins(teamID, cash) {
+export async function teamSubtractCoins(teamID, cash) {
   var Team = await functions.getTeam(teamID);
 
   functions.subtractCoins(Team, cash)
 }
 
-async function setCoinsTeam(teamID, cash) {
+export async function setCoinsTeam(teamID, cash) {
   var Team = await functions.getTeam(teamID);
 
   functions.setCoins(Team, cash)
@@ -82,13 +83,11 @@ export async function buyPatent(teamID,houseID){
     return;
   }
   var Teams = await functions.getTeam(teamID);
-  let { data: Houses, error_house } = await supabase
-  .from('Houses')
-  .select('*').eq('IDHOUSE', houseID)
-  if(Houses[0].IDTEAM===null){
-    if(typeof Houses!=='undefined' && typeof Teams!=='undefined' && Houses[0].TYPE==="house"){
-      functions.subtractCoins(Teams,Houses[0].PRICE);
-      console.log(Houses)
+  var House = await functions.getHouse(houseID);
+
+  if(House.IDTEAM===null){
+    if(typeof House!=='undefined' && typeof Teams!=='undefined' && House.TYPE==="house"){
+      functions.subtractCoins(Teams,House.PRICE);
       const { updated, update_error } = await supabase  //NOTE verificar se da erro
       .from('Houses')
       .update({ IDTEAM: teamID })
@@ -99,7 +98,7 @@ export async function buyPatent(teamID,houseID){
   }
 }
 
-async function increasePot(teamID,cash){
+export async function increasePot(teamID,cash){
   var Teams = await functions.getTeams([teamID, potID]);
 
   if(typeof Teams!=='undefined' && Teams.length){
@@ -114,7 +113,7 @@ async function increasePot(teamID,cash){
   }
 }
 
-async function receivePot(teamID){
+export async function receivePot(teamID){
   var Teams = await functions.getTeams([teamID, potID]);
 
   if(typeof Teams!=='undefined' && Teams.length){
@@ -129,7 +128,7 @@ async function receivePot(teamID){
   }
 }
 
-async function addPlayer2Team(personID, teamID){
+export async function addPlayer2Team(personID, teamID){
   if(typeof personID==='undefined' || typeof teamID==='undefined' || personID < 0 || teamID < 0){
     return;
   }
@@ -147,7 +146,7 @@ async function addPlayer2Team(personID, teamID){
   }
 }
 
-async function removePlayerFromTeam(personID){
+export async function removePlayerFromTeam(personID){
   if(typeof personID==='undefined' || personID < 0){
     return;
   }
@@ -165,13 +164,13 @@ async function removePlayerFromTeam(personID){
   }
 }
 
-async function transferPlayerFromTeam(personID, finalTeamID){
+export async function transferPlayerFromTeam(personID, finalTeamID){
   if(typeof personID==='undefined' || typeof finalTeamID==='undefined' || personID < 0 || finalTeamID < 0){
     return;
   }
 
   var Person = await functions.getPerson(personID);
-  var Team = await functions.getTeam(finalTeamID)
+  var Team = await functions.getTeam(finalTeamID);
 
   if(typeof Person!=='undefined' && typeof Team!=='undefined') {
     if(Person.IDTEAM !==null) {
@@ -183,7 +182,38 @@ async function transferPlayerFromTeam(personID, finalTeamID){
   }
 }
 
+export async function tradeHouse(houseID, finalTeamID){
+  if(typeof houseID==='undefined' || typeof finalTeamID==='undefined' || houseID < 0 || finalTeamID < 0){
+    return;
+  }
 
-transferPlayerFromTeam(1, 1)
+  var Team = await functions.getTeam(finalTeamID);
+  var House = await functions.getHouse(houseID);
+
+  if (typeof House!=='undefined' && typeof Team!=='undefined' && House.TYPE==="house") {
+    if (House.IDTEAM !== null) {
+      const { updated, update_error } = await supabase  //NOTE verificar se da erro
+      .from('Houses')
+      .update({ IDTEAM: finalTeamID })
+      .eq('IDHOUSE', houseID)
+    }
+  }
+
+}
+
+export async function shuffleCards(){
+  let { data: Cards, error } = await supabase    //NOTE verificar se da erro
+  .from('SpecialCards')
+  .select('*')
+
+  while (Cards.length > 0) {
+    var random = functions.getRandomInt(0, Cards.length);
+    Deck.push(Cards.splice(random, 1));
+  }
+}
+
+
+
+shuffleCards();
 console.log(functions.logTime());
 functions.hash_string("oi");
