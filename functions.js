@@ -7,8 +7,8 @@ export function getRandomInt(min, max) {
 }
 
 export function logTime(){
-    return Date().toLocaleString('en-GB', { hour: "numeric", 
-    minute: "numeric"});
+    var dt = new Date(new Date().toString().split('GMT')[0]+' UTC').toISOString()
+    return dt
 }
 
 export async function getTeam (teamID) {

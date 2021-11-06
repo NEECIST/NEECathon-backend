@@ -244,6 +244,11 @@ export async function buyCart(teamID, cart) {
 
     for (var i = 0; i < cart.length; i++) {
       updateStock(Component[i].IDCOMPONENT, (Component[i].STOCK - cart[i].ammount))
+      const { insert, insert_error } = await supabase  //NOTE verificar se da erro
+      .from('Components|Team')
+      .insert([
+        { IDCOMPONENT: Component[i].IDCOMPONENT, IDTEAM: teamID, QUANTITY: cart[i].ammount, LogTime: functions.logTime() },
+      ])
     }
 
     functions.subtractCoins(Team, cost)
