@@ -7,6 +7,7 @@ import { shopRoutes } from "./routes/shopRoutes.js";
 dotenv.config({ path: "./config.env" });
 const port = process.env.PORT || 5000;
 import { userRoutes } from "./routes/userRoutes.js";
+import * as functions from "./security/token/token.js";
 
 app.use(cors());
 app.use(express.json());
@@ -17,3 +18,5 @@ app.use(userRoutes);
 app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);
 });
+
+console.log(functions.validate_token(process.env.TOKEN));

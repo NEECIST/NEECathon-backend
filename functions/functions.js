@@ -1,4 +1,4 @@
-import { supabase } from './settings.js'
+import { supabase } from '../settings.js'
 
 export function getRandomInt(min, max) {
     min = Math.ceil(min);

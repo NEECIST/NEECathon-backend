@@ -1,5 +1,5 @@
 import { supabase } from '../settings.js'
-import * as functions from '../functions.js'
+import * as functions from '../functions/functions.js'
 
 var potID = 0;
 var BOARD_SIZE = 24;
