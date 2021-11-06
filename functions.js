@@ -65,7 +65,7 @@ export async function subtractCoins(Team,cash){
     if(typeof Team==='undefined' || typeof cash==='undefined' || cash<0){
         return false;
     }
-    if(Team.CASH-cash>0){
+    if(Team.CASH-cash>=0){
         Team.CASH=(Team.CASH-=cash) <0 ? 0: Team.CASH;  //REVIEW impedir ação se não for possível subtrair
         const { updated, update_error } = await supabase
         .from('Teams')
@@ -75,7 +75,7 @@ export async function subtractCoins(Team,cash){
         
         return true;
     }else{
-        console.log("Team doesn´t have enough money");
+        console.log("Team doesn't have enough money");
         return false;
     }
 }
