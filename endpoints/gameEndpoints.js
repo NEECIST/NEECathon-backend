@@ -3,6 +3,7 @@ import * as functions from '../functions.js'
 
 var potID = 0;
 var BOARD_SIZE = 24;
+var START_CASH = 200;
 var Deck = [];
 
 export async function teamAddCoins(teamID, cash) {
@@ -250,10 +251,64 @@ export async function buyCart(teamID, cart) {
   }
 }
 
-var cart = [ {componentID: 1, ammount: 3},
-  {componentID: 3, ammount: 1},
-  {componentID: 4, ammount: 1}
-]
-buyCart(2, cart)
-console.log(functions.logTime());
-functions.hash_string("oi");
+export async function cardLC(teamID) {
+  var Team = await functions.getTeam(teamID);
+  var current_house = Team.HOUSE;
+  var card;
+
+  if (!Deck.length) {
+    await shuffleCards();
+  }
+  card = (Deck.pop())[0];
+  
+  if (Team !== undefined) {
+    switch (card.TYPE) {
+      case 1: // Give money to Pot
+        increasePot(teamID, card.AMMOUNT);
+        break;
+
+      case 2: // Give/recieve money to/from teams
+        let { data: Teams, error } = await supabase
+          .from('Teams')
+          .select('*').gt('IDTEAM', 1).neq('IDTEAM', teamID)
+          // TODO error
+        if (card.AMMOUNT < 0) {
+          Teams.forEach(team => {
+            transferCoins(team.IDTEAM, teamID, 0 - card.AMMOUNT);
+          });
+        } else {
+          Teams.forEach(team => {
+            transferCoins(teamID, team.IDTEAM, card.AMMOUNT);
+          });
+        }
+        break;
+
+      case 3: // Move to relative house
+        House += card.AMMOUNT;
+        if (House >= BOARD_SIZE) {
+          House -= BOARD_SIZE;
+          Team.CASH += START_CASH;
+        }
+        const { data, error } = await supabase
+          .from('Teams')
+          .update({ HOUSE: House, CASH: Team.CASH})
+          .eq('IDTEAM', teamID)
+        break;
+
+      case 4: // Move to specific house
+        Team.HOUSE = card.AMMOUNT;
+        if (Team.HOUSE < House && Team.HOUSE != 6) {
+          Team.CASH += START_CASH;
+        }
+        const { data, error } = await supabase
+          .from('Teams')
+          .update({ HOUSE: House, CASH: Team.CASH})
+          .eq('IDTEAM', teamID)
+        break;
+      default: 
+        break;
+    }
+    // TODO return description
+    // NOTE check for errors
+  }
+}
