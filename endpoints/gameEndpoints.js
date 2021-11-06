@@ -5,24 +5,55 @@ var potID = 0;
 var BOARD_SIZE = 24;
 var Deck = [];
 
+
+/**
+ * Add coins to a Team
+ * 
+ * @param {number} teamID id of the team
+ * @param {number} cash ammount of cash to add
+ * @return void
+ */
 export async function teamAddCoins(teamID, cash) {
   var Team = await functions.getTeam(teamID);
 
   functions.addCoins(Team, cash)
 }
 
+
+/**
+ * Remove coins from a Team
+ * 
+ * @param {number} teamID id of the team
+ * @param {number} cash ammount of cash to remove
+ * @return {boolean} true if succesfull
+ */
 export async function teamSubtractCoins(teamID, cash) {
   var Team = await functions.getTeam(teamID);
 
-  functions.subtractCoins(Team, cash)
+  return functions.subtractCoins(Team, cash)
 }
 
+
+/**
+ * Set coins of a Team
+ * 
+ * @param {number} teamID id of the giver team
+ * @param {number} cash ammount of cash to set
+ * @return void
+ */
 export async function setCoinsTeam(teamID, cash) {
   var Team = await functions.getTeam(teamID);
 
   functions.setCoins(Team, cash)
 }
 
+
+/**
+ * Throw dices an move Team
+ * 
+ * @param {number} teamID id of the team
+ * @return void
+ */
 export async function throwDices(teamID){
 
   if(typeof teamID==='undefined' ||teamID < 0){
@@ -61,6 +92,14 @@ export async function throwDices(teamID){
 }
 
 
+/**
+ * Transfer coins between Teams
+ * 
+ * @param {number} minusTeam id of the giver team
+ * @param {number} plusTeam id of the reciever team
+ * @param {number} cash ammount of cash to be transfered
+ * @return void
+ */
 export async function transferCoins(minusTeam,plusTeam,cash){
   if(typeof minusTeam==='undefined' || typeof plusTeam==='undefined' || typeof cash==='undefined' || minusTeam < 0 || plusTeam < 0 || cash < 0){
     return;
@@ -72,12 +111,25 @@ export async function transferCoins(minusTeam,plusTeam,cash){
     var MTeam = (Teams[0].IDTEAM===minusTeam) ? Teams[0] : Teams[1];
     var PTeam = (Teams[0].IDTEAM===plusTeam) ? Teams[0] : Teams[1];
 
-    if(functions.subtractCoins(MTeam, cash)){
+    if(await functions.subtractCoins(MTeam, cash)){
       functions.addCoins(PTeam, cash);
+      const { insert, insert_error } = await supabase  //NOTE verificar se da erro
+      .from('Team|Team')
+      .insert([
+        { IDTEAM1: minusTeam, IDTEAM2: plusTeam, CASH: cash, LogTime: functions.logTime() },
+      ])
     }
   }
 }
 
+
+/**
+ * Buy a Patent
+ * 
+ * @param {number} teamID id of the team
+ * @param {number} houseID id of the house
+ * @return void
+ */
 export async function buyPatent(teamID,houseID){
   if(typeof teamID==='undefined' || typeof houseID==='undefined' || teamID < 0 || houseID < 0){
     return;
@@ -87,17 +139,32 @@ export async function buyPatent(teamID,houseID){
 
   if(House.IDTEAM===null){
     if(typeof House!=='undefined' && typeof Teams!=='undefined' && House.TYPE==="house"){
-      functions.subtractCoins(Teams,House.PRICE);
-      const { updated, update_error } = await supabase  //NOTE verificar se da erro
-      .from('Houses')
-      .update({ IDTEAM: teamID })
-      .eq('IDHOUSE', houseID)
+      if (await functions.subtractCoins(Teams,House.PRICE)) {
+        const { updated, update_error } = await supabase  //NOTE verificar se da erro
+          .from('Houses')
+          .update({ IDTEAM: teamID })
+          .eq('IDHOUSE', houseID)
+        
+        const { insert, insert_error } = await supabase  //NOTE verificar se da erro
+          .from('Houses|Team')
+          .insert([
+            { IDHOUSE: houseID, IDTEAM: teamID, LogTime: functions.logTime() },
+          ])
+      }
     }
   }else{
     console.log("Patent already bought");
   }
 }
 
+
+/**
+ * Transfer money from a Team to the Pot
+ * 
+ * @param {number} teamID id of the team
+ * @param {number} cash ammount of cash to be transfered
+ * @return void
+ */
 export async function increasePot(teamID,cash){
   var Teams = await functions.getTeams([teamID, potID]);
 
@@ -105,7 +172,7 @@ export async function increasePot(teamID,cash){
     var Team = (Teams[0].IDTEAM===teamID) ? Teams[0] : Teams[1];
     var Pot = (Teams[0].IDTEAM===potID) ? Teams[0] : Teams[1];
 
-    if(functions.subtractCoins(Team, cash)){
+    if(await functions.subtractCoins(Team, cash)){
       functions.addCoins(Pot, cash)
     }else{
       //TODO se não tiver dinheiro  
@@ -113,6 +180,13 @@ export async function increasePot(teamID,cash){
   }
 }
 
+
+/**
+ * Recieve all the money in the pot
+ * 
+ * @param {number} teamID id of the team
+ * @return void
+ */
 export async function receivePot(teamID){
   var Teams = await functions.getTeams([teamID, potID]);
 
@@ -128,6 +202,14 @@ export async function receivePot(teamID){
   }
 }
 
+
+/**
+ * Add a player to a team
+ * 
+ * @param {number} personID id of the person
+ * @param {number} teamID id of the team
+ * @return void
+ */
 export async function addPlayer2Team(personID, teamID){
   if(typeof personID==='undefined' || typeof teamID==='undefined' || personID < 0 || teamID < 0){
     return;
@@ -146,6 +228,13 @@ export async function addPlayer2Team(personID, teamID){
   }
 }
 
+
+/**
+ * Removes a player from a team
+ * 
+ * @param {number} personID id of the person to be removed
+ * @return void
+ */
 export async function removePlayerFromTeam(personID){
   if(typeof personID==='undefined' || personID < 0){
     return;
@@ -164,6 +253,14 @@ export async function removePlayerFromTeam(personID){
   }
 }
 
+
+/**
+ * Updates the owner of a given house
+ * 
+ * @param {number} houseID id of the house
+ * @param {number} finalTeamID id of the new owner of the house
+ * @return void
+ */
 export async function transferPlayerFromTeam(personID, finalTeamID){
   if(typeof personID==='undefined' || typeof finalTeamID==='undefined' || personID < 0 || finalTeamID < 0){
     return;
@@ -182,6 +279,14 @@ export async function transferPlayerFromTeam(personID, finalTeamID){
   }
 }
 
+
+/**
+ * Updates the owner of a given house
+ * 
+ * @param {number} houseID id of the house
+ * @param {number} finalTeamID id of the new owner of the house
+ * @return void
+ */
 export async function tradeHouse(houseID, finalTeamID){
   if(typeof houseID==='undefined' || typeof finalTeamID==='undefined' || houseID < 0 || finalTeamID < 0){
     return;
@@ -201,6 +306,12 @@ export async function tradeHouse(houseID, finalTeamID){
 
 }
 
+
+/**
+ * Get all the cards and shuffles them
+ * 
+ * @return void
+ */
 export async function shuffleCards(){
   let { data: Cards, error } = await supabase    //NOTE verificar se da erro
   .from('SpecialCards')
@@ -210,8 +321,17 @@ export async function shuffleCards(){
     var random = functions.getRandomInt(0, Cards.length);
     Deck.push(Cards.splice(random, 1));
   }
+  console.log(Deck)
 }
 
+
+/**
+ * Updates the stock of a given component
+ * 
+ * @param {number} component_id id of the component
+ * @param {number} ammount the ammount of the stock
+ * @return void
+ */
 export async function updateStock(component_id, ammount) {
   
   var stock = ammount
@@ -226,6 +346,14 @@ export async function updateStock(component_id, ammount) {
 
 }
 
+
+/**
+ * Buy all the components in a given cart
+ * 
+ * @param {number} teamID id of the team
+ * @param cart list of components to buy
+ * @return void
+ */
 export async function buyCart(teamID, cart) {
 
   var Team = await functions.getTeam(teamID);
@@ -244,16 +372,13 @@ export async function buyCart(teamID, cart) {
 
     for (var i = 0; i < cart.length; i++) {
       updateStock(Component[i].IDCOMPONENT, (Component[i].STOCK - cart[i].ammount))
+      const { insert, insert_error } = await supabase  //NOTE verificar se da erro
+      .from('Components|Team')
+      .insert([
+        { IDCOMPONENT: Component[i].IDCOMPONENT, IDTEAM: teamID, QUANTITY: cart[i].ammount, LogTime: functions.logTime() },
+      ])
     }
 
     functions.subtractCoins(Team, cost)
   }
 }
-
-var cart = [ {componentID: 1, ammount: 3},
-  {componentID: 3, ammount: 1},
-  {componentID: 4, ammount: 1}
-]
-buyCart(2, cart)
-console.log(functions.logTime());
-functions.hash_string("oi");
