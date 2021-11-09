@@ -19,4 +19,4 @@ app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);
 });
 
-console.log(functions.validate_token(process.env.TOKEN));
+console.log(functions.validate_token(process.env.TOKEN)); //FIXME only to show working
