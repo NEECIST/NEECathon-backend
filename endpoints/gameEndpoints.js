@@ -3,7 +3,7 @@ import * as functions from '../functions.js'
 
 var potID = 0;
 var BOARD_SIZE = 24;
-var START_CASH = 200;
+var START_CASH = 20;
 var Deck = [];
 
 export async function teamAddCoins(teamID, cash) {
@@ -252,43 +252,57 @@ export async function buyCart(teamID, cart) {
 }
 
 export async function cardLC(teamID) {
+
+  if (teamID === undefined){
+    return;
+  }
+
   var Team = await functions.getTeam(teamID);
   var card;
 
   if (!Deck.length) {
     await shuffleCards();
   }
+
   card = (Deck.pop())[0];
   console.log(card.DESCRIPTION);
 
-  if (Team !== undefined) {
+  if (Team !== undefined && card !== undefined) {
     switch (card.TYPE) {
       case 0: // Special cards (challenges)
         break; // Do nothing
 
       case 1: // Give money to Pot
-        increasePot(teamID, card.AMMOUNT);
+        if (card.AMMOUNT) {
+          increasePot(teamID, card.AMMOUNT);
+        }
         break;
 
       case 2: // Recieve money from bank
-        teamAddCoins(teamID, card.AMMOUNT);
+        if (card.AMMOUNT){
+          teamAddCoins(teamID, card.AMMOUNT);
+        }
         break;
 
       case 3: // Give/recieve money to/from teams
         // Select all valid teams that are not the playing team
-        let { data: Teams, error } = await supabase
+        let { data: Teams, error1 } = await supabase
           .from('Teams')
           .select('*').gt('IDTEAM', 1).neq('IDTEAM', teamID) 
           // TODO error
         // Negative ammount -> team gives money
         if (card.AMMOUNT < 0) {
           Teams.forEach(team => {
-            transferCoins(team.IDTEAM, teamID, 0 - card.AMMOUNT);
+            if (team !== undefined) {
+              transferCoins(team.IDTEAM, teamID, 0 - card.AMMOUNT);
+            }
           });
         // Positive ammount -> team recieves money
         } else {
           Teams.forEach(team => {
-            transferCoins(teamID, team.IDTEAM, card.AMMOUNT);
+            if (team !== undefined) {
+              transferCoins(teamID, team.IDTEAM, card.AMMOUNT);
+            }
           });
         }
         break;
@@ -301,7 +315,7 @@ export async function cardLC(teamID) {
           Team.HOUSE -= BOARD_SIZE;
           Team.CASH += START_CASH;
         }
-        const { data1, error1 } = await supabase
+        const { data2, error2 } = await supabase
           .from('Teams')
           .update({ HOUSE: Team.HOUSE, CASH: Team.CASH})
           .eq('IDTEAM', teamID)
@@ -316,7 +330,7 @@ export async function cardLC(teamID) {
         if (Team.HOUSE < current_house && Team.HOUSE != 6) {
           Team.CASH += START_CASH;
         }
-        const { data2, error2 } = await supabase
+        const { data3, error3 } = await supabase
           .from('Teams')
           .update({ HOUSE: Team.HOUSE, CASH: Team.CASH})
           .eq('IDTEAM', teamID)
@@ -328,4 +342,8 @@ export async function cardLC(teamID) {
     // TODO return description
     // NOTE check for errors
   }
+}
+
+for (let i = 0; i < 10; i++) {
+  await cardLC(1);
 }
