@@ -3,6 +3,7 @@ import * as functions from '../functions/functions.js'
 
 var potID = 0;
 var BOARD_SIZE = 24;
+var START_CASH = 20;
 var Deck = [];
 
 
@@ -380,5 +381,98 @@ export async function buyCart(teamID, cart) {
     }
 
     functions.subtractCoins(Team, cost)
+  }
+}
+
+export async function cardLC(teamID) {
+
+  if (teamID === undefined){
+    return;
+  }
+
+  var Team = await functions.getTeam(teamID);
+  var card;
+
+  if (!Deck.length) {
+    await shuffleCards();
+  }
+
+  card = (Deck.pop())[0];
+  console.log(card.DESCRIPTION);
+
+  if (Team !== undefined && card !== undefined) {
+    switch (card.TYPE) {
+      case 0: // Special cards (challenges)
+        break; // Do nothing
+
+      case 1: // Give money to Pot
+        if (card.AMMOUNT) {
+          increasePot(teamID, card.AMMOUNT);
+        }
+        break;
+
+      case 2: // Recieve money from bank
+        if (card.AMMOUNT){
+          teamAddCoins(teamID, card.AMMOUNT);
+        }
+        break;
+
+      case 3: // Give/recieve money to/from teams
+        // Select all valid teams that are not the playing team
+        let { data: Teams, error1 } = await supabase
+          .from('Teams')
+          .select('*').gt('IDTEAM', 1).neq('IDTEAM', teamID) 
+          // TODO error
+        // Negative ammount -> team gives money
+        if (card.AMMOUNT < 0) {
+          Teams.forEach(team => {
+            if (team !== undefined) {
+              transferCoins(team.IDTEAM, teamID, 0 - card.AMMOUNT);
+            }
+          });
+        // Positive ammount -> team recieves money
+        } else {
+          Teams.forEach(team => {
+            if (team !== undefined) {
+              transferCoins(teamID, team.IDTEAM, card.AMMOUNT);
+            }
+          });
+        }
+        break;
+
+      case 4: // Move to relative house
+        Team.HOUSE += card.AMMOUNT;
+        
+        // Team finishes a lap
+        if (Team.HOUSE >= BOARD_SIZE) { 
+          Team.HOUSE -= BOARD_SIZE;
+          Team.CASH += START_CASH;
+        }
+        const { data2, error2 } = await supabase
+          .from('Teams')
+          .update({ HOUSE: Team.HOUSE, CASH: Team.CASH})
+          .eq('IDTEAM', teamID)
+        break;
+
+      case 5: // Move to specific house
+        var current_house = Team.HOUSE;
+
+        Team.HOUSE = card.AMMOUNT;
+
+        // Team passes the starting house and is not going to jail
+        if (Team.HOUSE < current_house && Team.HOUSE != 6) {
+          Team.CASH += START_CASH;
+        }
+        const { data3, error3 } = await supabase
+          .from('Teams')
+          .update({ HOUSE: Team.HOUSE, CASH: Team.CASH})
+          .eq('IDTEAM', teamID)
+        break;
+
+        default: // TODO invalid card type
+          break;
+    }
+    // TODO return description
+    // NOTE check for errors
   }
 }
