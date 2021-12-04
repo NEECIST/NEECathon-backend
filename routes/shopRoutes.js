@@ -2,7 +2,7 @@ import express from "express";
 export const shopRoutes = express.Router();
 
 import * as endpoints from "../endpoints/shopEndpoints.js";
-import * as sec_token from "../security/token/token.js";
+import * as security from "../security/token/token.js";
 import * as functions from "../functions/functions.js";
 import * as shopFunctions from "../endpoints/shopEndpoints.js";
 
@@ -34,18 +34,17 @@ shopRoutes.route("/buy").post(async function (req, res) {
   var itemList = body.itemList;
   var token = body.token;
 
-  var uuid = sec_token.decode_uuid(token);
+  var uuid = security.decode_uuid(token);
 
   if (uuid === null) {
+    res.send({ status: "Failure", message: "No user with that uuid" });
     /*Return invalid token message*/
     return;
   }
   var user = await functions.getPerson(uuid);
-  console.log(user, "teste")
+  console.log(user);
 
   shopFunctions.buyCart(user.IDTEAM, itemList);
-
-
 });
 
 function compareIds(a, b) {
