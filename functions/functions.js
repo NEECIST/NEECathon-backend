@@ -1,4 +1,5 @@
 import { supabase } from "../settings.js";
+export var NEEC_TEAM_ID = 1;
 
 export function getRandomInt(min, max) {
   min = Math.ceil(min);
