@@ -14,11 +14,11 @@ var TIME_FIRST_DICE_ROLL = null;
  * @return minutes and seconds until next roll
  */
 export function rollTimer(){
-  if(TIME_FIRST_DICE_ROLL==null){
+  if(TIME_FIRST_DICE_ROLL===null){
     TIME_FIRST_DICE_ROLL = new Date().getTime(); 
   }
-  var diff= new Date().getTime() - TIME_FIRST_DICE_ROLL;
-  var timer= functions.convertTime(diff);
+  var diff = new Date().getTime() - TIME_FIRST_DICE_ROLL;
+  var timer = functions.convertTime(diff);
   return {mm: 59 - timer.mm , ss: 59 - timer.ss}
 }
 
@@ -30,9 +30,13 @@ export function rollTimer(){
  * @return void
  */
 export async function teamAddCoins(teamID, cash) {
-  var Team = await functions.getTeam(teamID);
+  try{
+    var Team = await functions.getTeam(teamID);
 
-  functions.addCoins(Team, cash)
+    await functions.addCoins(Team, cash);
+  }catch(e){
+    throw e;
+  }
 }
 
 
@@ -44,9 +48,13 @@ export async function teamAddCoins(teamID, cash) {
  * @return {boolean} true if succesfull
  */
 export async function teamSubtractCoins(teamID, cash) {
-  var Team = await functions.getTeam(teamID);
+  try{
+    var Team = await functions.getTeam(teamID);
 
-  return functions.subtractCoins(Team, cash)
+    await functions.subtractCoins(Team, cash);
+  }catch(e){
+    throw e;
+  }
 }
 
 
@@ -58,53 +66,45 @@ export async function teamSubtractCoins(teamID, cash) {
  * @return void
  */
 export async function setCoinsTeam(teamID, cash) {
-  var Team = await functions.getTeam(teamID);
+  try{
+    var Team = await functions.getTeam(teamID);
 
-  functions.setCoins(Team, cash)
+    await functions.setCoins(Team, cash);
+  }catch(e){
+    throw e;
+  }
 }
 
 
 /**
- * Throw dices an move Team
+ * Throw dices and move Team
  * 
  * @param {number} teamID id of the team
  * @return void
  */
 export async function throwDices(teamID){
-
-  if(typeof teamID==='undefined' ||teamID < 0){
-    return;
-  }
-  var Teams = await functions.getTeam(teamID);
-
-  if(typeof Teams!=='undefined'){
-    var dices=[];
-    dices.push(functions.getRandomInt(1,7))
-    dices.push(functions.getRandomInt(1,7))
-    /*if(dices[0]===dices[1]){
+  try{
+    if(typeof teamID==='undefined' ||teamID < 0 || teamID===null){
+      throw "Parameters Undefined (throwDices)";
+    }
+    var Teams = await functions.getTeam(teamID);
+    if(Teams!==null && typeof Teams!=='undefined'){
+      var dices=[];
       dices.push(functions.getRandomInt(1,7))
       dices.push(functions.getRandomInt(1,7))
-      if(dices[2]===dices[3]){
-        dices.push(functions.getRandomInt(1,7))
-        dices.push(functions.getRandomInt(1,7))
-        if(dices[4]===dices[5]){
-          var house = 10;
-          const { updated, update_error } = await supabase
-          .from('Teams')
-          .update({ HOUSE: house })
-          .eq('IDTEAM', teamID)
-          return; //NOTE DEPRECATED doubles
-        }
-      }
-    }*/
-    var house = (Teams.HOUSE + dices.reduce((a,b) => a+b, 0)) >= BOARD_SIZE ? (Teams.HOUSE + dices.reduce((a,b) => a+b, 0))-BOARD_SIZE : Teams.HOUSE + dices.reduce((a,b) => a+b, 0)
-    console.log('throwDices:'+house)
-    const { updated, update_error } = await supabase
-    .from('Teams')
-    .update({ HOUSE: house })
-    .eq('IDTEAM', teamID)
-    //FIXME tamanho do tabuleiro e os updates saem undefined?
+      var house = (Teams.HOUSE + dices.reduce((a,b) => a+b, 0)) >= BOARD_SIZE ? (Teams.HOUSE + dices.reduce((a,b) => a+b, 0))-BOARD_SIZE : Teams.HOUSE + dices.reduce((a,b) => a+b, 0)
+      const { updated, update_error } = await supabase
+      .from('Teams')
+      .update({ HOUSE: house })
+      .eq('IDTEAM', teamID)
+      if(update_error) throw update_error
+    }else{
+      throw "Invalid Team"
+    }
+  }catch(e){
+    throw e;
   }
+  
 }
 
 
@@ -117,25 +117,32 @@ export async function throwDices(teamID){
  * @return void
  */
 export async function transferCoins(minusTeam,plusTeam,cash){
-  if(typeof minusTeam==='undefined' || typeof plusTeam==='undefined' || typeof cash==='undefined' || minusTeam < 0 || plusTeam < 0 || cash < 0){
-    return;
-  }
-
-  var Teams = await functions.getTeams([minusTeam, plusTeam]);
-
-  if(typeof Teams!=='undefined' && Teams.length){
-    var MTeam = (Teams[0].IDTEAM===minusTeam) ? Teams[0] : Teams[1];
-    var PTeam = (Teams[0].IDTEAM===plusTeam) ? Teams[0] : Teams[1];
-
-    if(await functions.subtractCoins(MTeam, cash)){
-      functions.addCoins(PTeam, cash);
+  try{
+    if(minusTeam===null || plusTeam===null || cash===null || typeof minusTeam==='undefined' || typeof plusTeam==='undefined' || typeof cash==='undefined' || minusTeam < 0 || plusTeam < 0 || cash < 0){
+      throw "Parameters Undefined (transferCoins)";
+    }
+  
+    var Teams = await functions.getTeams([minusTeam, plusTeam]);
+  
+    if(typeof Teams!=='undefined' && Teams!==null && Teams.length){
+      var MTeam = (Teams[0].IDTEAM===minusTeam) ? Teams[0] : Teams[1];
+      var PTeam = (Teams[0].IDTEAM===plusTeam) ? Teams[0] : Teams[1];
+  
+      await functions.subtractCoins(MTeam, cash);
+      await functions.addCoins(PTeam, cash);
       const { insert, insert_error } = await supabase  //NOTE verificar se da erro
       .from('Team|Team')
       .insert([
         { IDTEAM1: minusTeam, IDTEAM2: plusTeam, CASH: cash, LogTime: functions.logTime() },
       ])
+      if(insert_error) throw update_error
+    }else{
+      throw "Invalid Teams"
     }
+  }catch(e){
+    throw e
   }
+  
 }
 
 
