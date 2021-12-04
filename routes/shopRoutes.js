@@ -29,22 +29,39 @@ shopRoutes.route("/products").get(function (req, res) {
 });
 
 shopRoutes.route("/buy").post(async function (req, res) {
-  var body = req.body;
+  try {
+    var body = req.body;
 
-  var itemList = body.itemList;
-  var token = body.token;
+    var itemList = body.itemList;
+    var token = body.token;
 
-  var uuid = security.decode_uuid(token);
+    var uuid = security.decode_uuid(token);
 
-  if (uuid === null) {
-    res.send({ status: "Failure", message: "No user with that uuid" });
-    /*Return invalid token message*/
-    return;
+    if (uuid === null) {
+      throw "Wrongly Formated Token.";
+      // res.statusCode(406);
+      // res.send({ status: "Failure", message: "Wrongly Formated Token." });
+      // /*Return invalid token message*/
+      // return;
+    }
+    var user = await functions.getPerson(uuid);
+
+    // if (!user) {
+    //   res.statusCode(404);
+    //   res.send({ status: "Failure", message: "No user with that uuid." });
+    //   /*Return invalid token message*/
+    //   return;
+    // }
+    console.log(user);
+
+    shopFunctions.buyCart(user.IDTEAM, itemList);
+
+    res.statusCode(200);
+    res.send({ status: "Success", message: "Buy concluded successfuly." });
+  } catch (e) {
+    res.statusCode(404);
+    res.send({ status: "Failure", message: e });
   }
-  var user = await functions.getPerson(uuid);
-  console.log(user);
-
-  shopFunctions.buyCart(user.IDTEAM, itemList);
 });
 
 function compareIds(a, b) {
