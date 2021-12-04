@@ -3,8 +3,8 @@ export const shopRoutes = express.Router();
 
 import * as endpoints from "../endpoints/shopEndpoints.js";
 import * as sec_token from "../security/token/token.js";
-import * as functions from '../functions/functions.js'
-import * as shopFunctions from "../endpoints/shopEndpoints.js"
+import * as functions from "../functions/functions.js";
+import * as shopFunctions from "../endpoints/shopEndpoints.js";
 
 shopRoutes.route("/products").get(function (req, res) {
   endpoints
@@ -28,8 +28,7 @@ shopRoutes.route("/products").get(function (req, res) {
     });
 });
 
-shopRoutes.route("/buy").post(function (req, res) {
-  console.log(req.body);
+shopRoutes.route("/buy").post(async function (req, res) {
   var body = req.body;
 
   var itemList = body.itemList;
@@ -37,20 +36,16 @@ shopRoutes.route("/buy").post(function (req, res) {
 
   var uuid = sec_token.decode_uuid(token);
 
-  console.log(itemList, token, uuid);
   if (uuid === null) {
     /*Return invalid token message*/
-    return
+    return;
   }
-  var user = functions.getPerson(uuid)
+  var user = await functions.getPerson(uuid);
+  console.log(user, "teste")
 
   shopFunctions.buyCart(user.IDTEAM, itemList);
 
 
-
-  if (typeof teamID === "undefined" || teamID < 0) {
-    return;
-  }
 });
 
 function compareIds(a, b) {
