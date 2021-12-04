@@ -220,32 +220,6 @@ export async function receivePot(teamID){
 
 
 /**
- * Add a player to a team
- * 
- * @param {number} personID id of the person
- * @param {number} teamID id of the team
- * @return void
- */
-export async function addPlayer2Team(personID, teamID){
-  if(typeof personID==='undefined' || typeof teamID==='undefined' || personID < 0 || teamID < 0){
-    return;
-  }
-
-  var Person = await functions.getPerson(personID);
-  var Team = await functions.getTeam(teamID)
-
-  if(typeof Person!=='undefined' && typeof Team!=='undefined') {
-    if(Person.IDTEAM ===null) {
-      const { updated, update_error } = await supabase  //NOTE verificar se da erro
-      .from('Persons')
-      .update({ IDTEAM: teamID })
-      .eq('IDPERSON', personID)
-    }
-  }
-}
-
-
-/**
  * Removes a player from a team
  * 
  * @param {number} personID id of the person to be removed
@@ -271,25 +245,25 @@ export async function removePlayerFromTeam(personID){
 
 
 /**
- * Updates the owner of a given house
+ * Updates the team of a Player
  * 
- * @param {number} houseID id of the house
- * @param {number} finalTeamID id of the new owner of the house
+ * @param {number} personID id of the person
+ * @param {number} teamID id of the new owner of the house
  * @return void
  */
-export async function transferPlayerFromTeam(personID, finalTeamID){
-  if(typeof personID==='undefined' || typeof finalTeamID==='undefined' || personID < 0 || finalTeamID < 0){
+export async function setPlayerTeam(personID, teamID){
+  if(typeof personID==='undefined' || typeof teamID==='undefined' || personID < 0 || teamID < 0){
     return;
   }
 
   var Person = await functions.getPerson(personID);
-  var Team = await functions.getTeam(finalTeamID);
+  var Team = await functions.getTeam(teamID);
 
   if(typeof Person!=='undefined' && typeof Team!=='undefined') {
     if(Person.IDTEAM !==null) {
       const { updated, update_error } = await supabase  //NOTE verificar se da erro
       .from('Persons')
-      .update({ IDTEAM: finalTeamID })
+      .update({ IDTEAM: teamID })
       .eq('IDPERSON', personID)
     }
   }
@@ -299,24 +273,28 @@ export async function transferPlayerFromTeam(personID, finalTeamID){
 /**
  * Updates the owner of a given house
  * 
+ * @param {number} oldTeamID id of the current owner of the house
  * @param {number} houseID id of the house
- * @param {number} finalTeamID id of the new owner of the house
+ * @param {number} newTeamID id of the new owner of the house
  * @return void
  */
-export async function tradeHouse(houseID, finalTeamID){
-  if(typeof houseID==='undefined' || typeof finalTeamID==='undefined' || houseID < 0 || finalTeamID < 0){
+export async function transferHouse(oldTeamID, houseID, finalTeamID){
+  if(typeof oldTeamID==='undefined' || typeof houseID==='undefined' || typeof finalTeamID==='undefined' || oldTeamID < 0 || houseID < 0 || finalTeamID < 0){
     return;
   }
 
-  var Team = await functions.getTeam(finalTeamID);
+  var OldTeam = await functions.getTeam(oldTeamID);
+  var NewTeam = await functions.getTeam(finalTeamID);
   var House = await functions.getHouse(houseID);
 
-  if (typeof House!=='undefined' && typeof Team!=='undefined' && House.TYPE==="house") {
+  if (typeof OldTeam!=='undefined' && typeof House!=='undefined' && typeof NewTeam!=='undefined' && House.TYPE==="house") {
     if (House.IDTEAM !== null) {
-      const { updated, update_error } = await supabase  //NOTE verificar se da erro
-      .from('Houses')
-      .update({ IDTEAM: finalTeamID })
-      .eq('IDHOUSE', houseID)
+      if (House.IDTEAM === oldTeamID) {
+        const { updated, update_error } = await supabase  //NOTE verificar se da erro
+        .from('Houses')
+        .update({ IDTEAM: finalTeamID })
+        .eq('IDHOUSE', houseID)
+      }
     }
   }
 
@@ -342,7 +320,12 @@ export async function shuffleCards(){
 
 
 
-
+/**
+ * Take a card from the deck
+ * 
+ * @param {number} teamID id of the team 
+ * @return To do
+ */
 export async function cardLC(teamID) {
 
   if (teamID === undefined){

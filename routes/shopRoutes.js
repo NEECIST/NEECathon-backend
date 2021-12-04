@@ -58,7 +58,7 @@ shopRoutes.route("/updateStock").post(async function (req, res) {
     var user = await functions.getPerson(uuid);
 
     if(user.IDTEAM === functions.NEEC_TEAM_ID) {
-      await shopFunctions.buyCart(componentId, ammount);
+      await shopFunctions.updateStock(componentId, ammount);
     } else {
       // error
     }
