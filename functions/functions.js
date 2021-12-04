@@ -28,7 +28,7 @@ export async function getTeams (teamsID) {
 export async function getPerson (personID) {
     let { data: Person, error } = await supabase    //NOTE verificar se da erro
       .from('Persons')
-      .select('*').eq('IDPERSON', personID)
+      .select('*').eq('user_id', personID)
     return Person[0]
 }
 
