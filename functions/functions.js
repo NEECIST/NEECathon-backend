@@ -117,14 +117,17 @@ export async function subtractCoins(Team, cash) {
       throw "Parameters Undefined (subtractCoins)";
     }
     if (Team.CASH - cash >= 0) {
-      Team.CASH -= cash;
+
+      Team.CASH = (Team.CASH -= cash) < 0 ? 0 : Team.CASH; //REVIEW impedir ação se não for possível subtrair
+      const { updated, update_error } = await supabase.from("Teams").update({ CASH: Team.CASH }).eq("IDTEAM", Team.IDTEAM);
+      //NOTE checkar resposta
+      if(update_error) throw "Error: Updating team cash (subtractCoins)"
     } else {
-      Team.CASH -= 0;
+      console.log("Team doesn't have enough money");
+      throw "Team doesn't have enough money (subtractCoins)";
     }
-    const { updated, update_error } = await supabase.from("Teams").update({ CASH: Team.CASH }).eq("IDTEAM", Team.IDTEAM);
-    if(update_error) throw update_error
-  } catch (e) {
-    throw e;
+  } catch (error) {
+    throw error;
   }
 }
 
