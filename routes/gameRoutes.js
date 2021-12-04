@@ -9,7 +9,7 @@ mainRoutes.route("/rollTimer").get(function (req, res) {
   res.json(endpoints.rollTimer());
 });
 
-mainRoutes.route("/addCoins").post(function (req, res) {
+mainRoutes.route("/addCoins").post(async function (req, res) {
   try{
     var Person = functions.getPerson(security.decode_uuid(req.body.token));
     var teamId = Person.teamID;
@@ -22,7 +22,7 @@ mainRoutes.route("/addCoins").post(function (req, res) {
   }
 });
 
-mainRoutes.route("/subtractCoins").post(function (req, res) {
+mainRoutes.route("/subtractCoins").post(async function (req, res) {
   try{
     var Person = functions.getPerson(security.decode_uuid(req.body.token));
     var teamId = Person.teamID;
@@ -35,7 +35,7 @@ mainRoutes.route("/subtractCoins").post(function (req, res) {
   }
 });
 
-mainRoutes.route("/setCoins").post(function (req, res) {
+mainRoutes.route("/setCoins").post(async function (req, res) {
   try{
     var Person = functions.getPerson(security.decode_uuid(req.body.token));
     var teamId = Person.teamID;
@@ -48,7 +48,7 @@ mainRoutes.route("/setCoins").post(function (req, res) {
   }
 });
 
-mainRoutes.route("/throwDices").get(function (req, res) {
+mainRoutes.route("/throwDices").get(async function (req, res) {
   try{
     var Person = functions.getPerson(security.decode_uuid(req.body.token));
     var teamId = Person.teamID;
@@ -61,7 +61,7 @@ mainRoutes.route("/throwDices").get(function (req, res) {
   }
 })
 
-mainRoutes.route("/transferCoins").get(function (req, res) {
+mainRoutes.route("/transferCoins").get(async function (req, res) {
   try{
     var Person = functions.getPerson(security.decode_uuid(req.body.token));
     var teamId = Person.teamID;
@@ -77,7 +77,7 @@ mainRoutes.route("/transferCoins").get(function (req, res) {
   }
 })
 
-shopRoutes.route("/buyPatent").post(async function (req, res) {
+mainRoutes.route("/buyPatent").post(async function (req, res) {
   try {
     var body = req.body;
 
@@ -108,7 +108,7 @@ shopRoutes.route("/buyPatent").post(async function (req, res) {
   }
 });
 
-shopRoutes.route("/increasePot").post(async function (req, res) {
+mainRoutes.route("/increasePot").post(async function (req, res) {
   try {
     var body = req.body;
 
@@ -139,7 +139,7 @@ shopRoutes.route("/increasePot").post(async function (req, res) {
   }
 });
 
-shopRoutes.route("/receivePot").post(async function (req, res) {
+mainRoutes.route("/receivePot").post(async function (req, res) {
   try {
     var body = req.body;
 
@@ -169,7 +169,7 @@ shopRoutes.route("/receivePot").post(async function (req, res) {
   }
 });
 
-shopRoutes.route("/removePlayerFromTeam").post(async function (req, res) {
+mainRoutes.route("/removePlayerFromTeam").post(async function (req, res) {
   try {
     var body = req.body;
 
@@ -199,7 +199,7 @@ shopRoutes.route("/removePlayerFromTeam").post(async function (req, res) {
   }
 });
 
-shopRoutes.route("/setPlayerTeam").post(async function (req, res) {
+mainRoutes.route("/setPlayerTeam").post(async function (req, res) {
   try {
     var body = req.body;
 
@@ -230,7 +230,7 @@ shopRoutes.route("/setPlayerTeam").post(async function (req, res) {
   }
 });
 
-shopRoutes.route("/transferHouse").post(async function (req, res) {
+mainRoutes.route("/transferHouse").post(async function (req, res) {
   try {
     var body = req.body;
 
@@ -257,7 +257,7 @@ shopRoutes.route("/transferHouse").post(async function (req, res) {
   }
 });
 
-shopRoutes.route("/shuffleCards").post(async function (req, res) {
+mainRoutes.route("/shuffleCards").post(async function (req, res) {
   try {
     var body = req.body;
 
@@ -286,7 +286,7 @@ shopRoutes.route("/shuffleCards").post(async function (req, res) {
   }
 });
 
-shopRoutes.route("/cardLC").post(async function (req, res) {
+mainRoutes.route("/cardLC").post(async function (req, res) {
   try {
     var body = req.body;
 
