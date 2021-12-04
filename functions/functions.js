@@ -27,19 +27,30 @@ export function convertTime(time_difference) {
 }
 
 export async function getTeam(teamID) {
-  let { data: Team, error } = await supabase //NOTE verificar se da erro
+  try{
+    let { data: Team, error } = await supabase //NOTE verificar se da erro
     .from("Teams")
     .select("*")
     .eq("IDTEAM", teamID);
-  return Team[0];
+    if(error) throw "Team select failed"
+    if (Team) return Team[0];
+    else return null;
+  }catch(e){
+    throw e;
+  }
 }
 
 export async function getTeams(teamsID) {
-  let { data: Teams, error } = await supabase //NOTE verificar se da erro
+  try{
+    let { data: Teams, error } = await supabase //NOTE verificar se da erro
     .from("Teams")
     .select("*")
     .in("IDTEAM", teamsID);
-  return Teams;
+    if(error) throw "Team select failed"
+    return Teams;
+  }catch(e){
+    throw e;
+  }
 }
 
 export async function getPerson(personID) {
@@ -51,41 +62,53 @@ export async function getPerson(personID) {
 
     if (error) throw error;
     if (Person) return Person[0];
+    else return null;
   } catch (error) {
     throw "Error retriving person from DB";
   }
 }
 
 export async function getHouse(houseID) {
-  let { data: House, error } = await supabase //NOTE verificar se da erro
+  try{
+    let { data: House, error } = await supabase //NOTE verificar se da erro
     .from("Houses")
     .select("*")
     .eq("IDHOUSE", houseID);
-  return House[0];
+    if (error) throw error;
+    if (House) return House[0];
+    else return null;
+  }catch(e){
+    throw e;
+  }
+  
 }
 
 export async function getComponent(componentID) {
   try {
     let { data: Component, error } = await supabase //NOTE verificar se da erro
-      .from("Components")
-      .select("*")
-      .eq("IDCOMPONENT", componentID);
-    return Component[0];
-  } catch (error) {
-    throw "Error retriving component from DB";
+    .from("Components")
+    .select("*")
+    .eq("IDCOMPONENT", componentID);
+    if (error) throw error;
+    if (Component) return Component[0];
+    else return null;
+  } catch (e) {
+    throw e;
   }
 }
 
 export async function addCoins(Team, cash) {
-  if (typeof cash === "undefined" || typeof Team === "undefined" || cash < 0) {
-    return false;
+  try{
+    if (typeof cash === "undefined" || typeof Team === "undefined" || cash < 0) {
+      throw "Parameters Undefined (addCoins)"
+    }
+
+    Team.CASH += cash;
+    const { updated, update_error } = await supabase.from("Teams").update({ CASH: Team.CASH }).eq("IDTEAM", Team.IDTEAM);
+    if(update_error) throw update_error
+  }catch(e){
+    throw e;
   }
-
-  Team.CASH += cash;
-  const { updated, update_error } = await supabase.from("Teams").update({ CASH: Team.CASH }).eq("IDTEAM", Team.IDTEAM);
-  //NOTE checkar resposta
-
-  return true;
 }
 
 export async function subtractCoins(Team, cash) {
@@ -94,27 +117,27 @@ export async function subtractCoins(Team, cash) {
       throw "Parameters Undefined (subtractCoins)";
     }
     if (Team.CASH - cash >= 0) {
-      Team.CASH = (Team.CASH -= cash) < 0 ? 0 : Team.CASH; //REVIEW impedir ação se não for possível subtrair
-      const { updated, update_error } = await supabase.from("Teams").update({ CASH: Team.CASH }).eq("IDTEAM", Team.IDTEAM);
-      //NOTE checkar resposta
+      Team.CASH -= cash;
     } else {
-      console.log("Team doesn't have enough money");
-      throw "Team doesn't have enough money";
+      Team.CASH -= 0;
     }
+    const { updated, update_error } = await supabase.from("Teams").update({ CASH: Team.CASH }).eq("IDTEAM", Team.IDTEAM);
+    if(update_error) throw update_error
   } catch (e) {
     throw e;
   }
 }
 
 export async function setCoins(Team, cash) {
-  if (typeof Team === "undefined" || typeof cash === "undefined") {
-    //NOTE verificar se Teams.cash é undefined?
-    return false;
+  try{
+    if (typeof Team === "undefined" || typeof cash === "undefined") {
+      throw "Parameters Undefined (setCoins)";
+    }
+    const { updated, update_error } = await supabase.from("Teams").update({ CASH: cash }).eq("IDTEAM", Team.IDTEAM);
+    if(update_error) throw update_error
+  }catch(e){
+    throw e;
   }
-
-  const { updated, update_error } = await supabase.from("Teams").update({ CASH: cash }).eq("IDTEAM", Team.IDTEAM);
-  //NOTE checkar resposta
-  return true;
 }
 
 export async function hash_string(input) {

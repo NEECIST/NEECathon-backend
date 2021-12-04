@@ -10,42 +10,71 @@ mainRoutes.route("/rollTimer").get(function (req, res) {
 });
 
 mainRoutes.route("/addCoins").post(function (req, res) {
-  var teamId = functions.getPerson(security.decode_uuid(req.body.token));
-  if(teamId!==null){
-    endpoints.increasePot(teamId, parseInt(req.body.value));
-    packet = JSON.stringify({status: "Sucess"});
-    res.json(packet);
-  }else{
-    packet = JSON.stringify({status: "Failure"});
-    res.json(packet);
+  try{
+    var Person = functions.getPerson(security.decode_uuid(req.body.token));
+    var teamId = Person.teamID;
+    if(teamId !== 1) throw "User is not Admin!";
+    await endpoints.teamAddCoins(teamId, parseInt(req.body.value));
+    res.send({ status: "Success"});
+  }catch(e){
+    res.status(400);
+    res.send({ status: "Failure", message: e });
+  }
+});
+
+mainRoutes.route("/subtractCoins").post(function (req, res) {
+  try{
+    var Person = functions.getPerson(security.decode_uuid(req.body.token));
+    var teamId = Person.teamID;
+    if(teamId !== 1) throw "User is not Admin!";
+    await endpoints.teamSubtractCoins(teamId, parseInt(req.body.value));
+    res.send({ status: "Success"});
+  }catch(e){
+    res.status(400);
+    res.send({ status: "Failure", message: e });
+  }
+});
+
+mainRoutes.route("/setCoins").post(function (req, res) {
+  try{
+    var Person = functions.getPerson(security.decode_uuid(req.body.token));
+    var teamId = Person.teamID;
+    if(teamId !== 1) throw "User is not Admin!";
+    await endpoints.setCoinsTeam(teamId, parseInt(req.body.value));
+    res.send({ status: "Success"});
+  }catch(e){
+    res.status(400);
+    res.send({ status: "Failure", message: e });
   }
 });
 
 mainRoutes.route("/throwDices").get(function (req, res) {
-  var teamID = req.body.teamID;
-
-  //Add check if it is admin//
-    endpoints.throwDices(teamID).then(function (rolls) {
-    console.log(rolls, "Routes");
-    res.json(rolls);
-  }).catch(function(e) {
-    console.log(e);
-  });
+  try{
+    var Person = functions.getPerson(security.decode_uuid(req.body.token));
+    var teamId = Person.teamID;
+    if(teamId !== 1) throw "User is not Admin!";
+    roll = await endpoints.throwDices(teamID);
+    res.send({ status: "Success", value: roll});
+  }catch(e){
+    res.status(400);
+    res.send({ status: "Failure", message: e });
+  }
 })
 
 mainRoutes.route("/transferCoins").get(function (req, res) {
-  var minusTeam = req.body.minusTeam;
-  var plusTeam = req.body.plusTeam;
-  var value = req.body.value;
-
-  //Add check if it is admin or create accept system with admin whitelist//
-
-  endpoints.transferCoins(minusTeam, plusTeam, value).then(function (rolls) {
-    console.log(rolls, "Routes");
-    res.json(rolls);
-  }).catch(function(e) {
-    console.log(e);
-  });
+  try{
+    var Person = functions.getPerson(security.decode_uuid(req.body.token));
+    var teamId = Person.teamID;
+    if(teamId !== 1) throw "User is not Admin!";
+    var minusTeam = req.body.minusTeam;
+    var plusTeam = req.body.plusTeam;
+    var value = req.body.value;
+    await endpoints.transferCoins(minusTeam, plusTeam, value);
+    res.send({ status: "Success"});
+  }catch(e){
+    res.status(400);
+    res.send({ status: "Failure", message: e });
+  }
 })
 
 shopRoutes.route("/buyPatent").post(async function (req, res) {
@@ -286,7 +315,5 @@ shopRoutes.route("/cardLC").post(async function (req, res) {
     res.send({ status: "Failure", message: e });
   }
 });
-
-
 
 mainRoutes.route("/transferCoins")
