@@ -10,7 +10,7 @@ mainRoutes.route("/rollTimer").get(function (req, res) {
 });
 
 mainRoutes.route("/addCoins").post(function (req, res) {
-  var teamId = functions.getPerson(security.decode_uuid(req.token));
+  var teamId = functions.getPerson(security.decode_uuid(req.body.token));
   if(teamId!==null){
     endpoints.increasePot(teamId, parseInt(req.body.value));
     packet = JSON.stringify({status: "Sucess"});

@@ -19,7 +19,7 @@ export function rollTimer(){
   }
   var diff= new Date().getTime() - TIME_FIRST_DICE_ROLL;
   var timer= functions.convertTime(diff);
-  return {mm: 60 - timer.mm , ss: 60 - timer.ss}
+  return {mm: 59 - timer.mm , ss: 59 - timer.ss}
 }
 
 /**
