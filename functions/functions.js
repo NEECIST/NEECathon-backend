@@ -11,6 +11,20 @@ export function logTime(){
     return dt
 }
 
+export function convertTime(time_difference){
+    var msec = time_difference;
+    var days = Math.floor(msec / 1000 / 60 / (60 * 24));
+    msec -= days * 1000 * 60 * 60 * 24;
+    var hh = Math.floor(msec / 1000 / 60 / 60);
+    msec -= hh * 1000 * 60 * 60;
+    var mm = Math.floor(msec / 1000 / 60);
+    msec -= mm * 1000 * 60;
+    var ss = Math.floor(msec / 1000);
+    msec -= ss * 1000;
+
+    return {days: days, hh: hh, mm: mm, ss: ss}
+}
+
 export async function getTeam (teamID) {
     let { data: Team, error } = await supabase  //NOTE verificar se da erro
       .from('Teams')

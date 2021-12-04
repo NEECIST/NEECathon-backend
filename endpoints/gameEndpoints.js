@@ -5,7 +5,22 @@ var potID = 0;
 var BOARD_SIZE = 24;
 var START_CASH = 20;
 var Deck = [];
+var TIME_FIRST_DICE_ROLL = null;
 
+
+/**
+ * Check countdown timer for new roll
+ * 
+ * @return minutes and seconds until next roll
+ */
+export function rollTimer(){
+  if(TIME_FIRST_DICE_ROLL==null){
+    TIME_FIRST_DICE_ROLL = new Date().getTime(); 
+  }
+  var diff= new Date().getTime() - TIME_FIRST_DICE_ROLL;
+  var timer= functions.convertTime(diff);
+  return {mm: 60 - timer.mm , ss: 60 - timer.ss}
+}
 
 /**
  * Add coins to a Team
