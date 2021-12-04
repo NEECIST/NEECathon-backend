@@ -97,12 +97,13 @@ export async function subtractCoins(Team, cash) {
       Team.CASH = (Team.CASH -= cash) < 0 ? 0 : Team.CASH; //REVIEW impedir ação se não for possível subtrair
       const { updated, update_error } = await supabase.from("Teams").update({ CASH: Team.CASH }).eq("IDTEAM", Team.IDTEAM);
       //NOTE checkar resposta
+      if(update_error) throw "Error: Updating team cash (subtractCoins)"
     } else {
       console.log("Team doesn't have enough money");
-      throw "Team doesn't have enough money";
+      throw "Team doesn't have enough money (subtractCoins)";
     }
-  } catch (e) {
-    throw e;
+  } catch (error) {
+    throw error;
   }
 }
 
