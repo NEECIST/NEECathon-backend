@@ -12,7 +12,7 @@ export async function updateStock(component_id, ammount) {
   try {
     var stock = ammount;
 
-    let { error } = await supabase //NOTE precisa de ser transaction
+    let { error } = await supabase
       .rpc("updatestock", {
         stock,
         component_id,
@@ -37,33 +37,33 @@ export async function buyCart(teamID, cart) {
   var Component = [];
   var cost = 0;
 
-  if (Team !== undefined) {
-    //NOTE usar locks ou transaction
+  if (typeof Team !== 'undefined' && Team !==null) {
     try {
       for (var i = 0; i < cart.length; i++) {
         Component.push(await functions.getComponent(cart[i].id));
-        if (Component[i] === undefined || Component[i].STOCK < cart[i].quantity) {
+        if (Component[i] === null || typeof Component[i] === 'undefined' || Component[i].STOCK < cart[i].quantity) {
           console.log("Component not found or overstock!");
-          throw "Component not found or overstock! (buyCart)";
+          throw "Component" + Component[i].NAME + "not found or overstock! (buyCart)";
         }
         cost += Component[i].PRICE * cart[i].quantity;
       }
       if (cost > Team.CASH) {
         console.log("Overbudget!");
-        throw "Overbuget (buyCart)";
+        throw "Overbuget! (buyCart)";
       }
 
       var dataInsert = [];
       for (var i = 0; i < cart.length; i++) {
-        updateStock(Component[i].IDCOMPONENT, Component[i].STOCK - cart[i].quantity);
+        await updateStock(Component[i].IDCOMPONENT, Component[i].STOCK - cart[i].quantity);
         dataInsert.push({ IDCOMPONENT: Component[i].IDCOMPONENT, IDTEAM: teamID, QUANTITY: cart[i].quantity, LogTime: functions.logTime() });
       }
-      const { insert, insert_error } = await supabase //NOTE verificar se da erro
+      const { insert, insert_error } = await supabase
         .from("Components|Team")
         .insert(dataInsert);
+      console.log(insert, "Insert");
       if (insert_error) throw "Error: Inserting items to team (buyCart)";
 
-      functions.subtractCoins(Team, cost);
+      await functions.subtractCoins(Team, cost);
     } catch (error) {
       throw error;
     }
