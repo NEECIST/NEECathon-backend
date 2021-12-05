@@ -8,36 +8,21 @@ import * as shopFunctions from "../endpoints/shopEndpoints.js";
 shopRoutes.route("/buy").post(async function (req, res) {
   try {
     var body = req.body;
-
     var itemList = body.itemList;
     var token = body.token;
 
     var uuid = security.decode_uuid(token);
 
-    if (uuid === null) {
-      throw "Wrongly Formated Token.";
-      // res.statusCode(406);
-      // res.send({ status: "Failure", message: "Wrongly Formated Token." });
-      // /*Return invalid token message*/
-      // return;
-    }
+    if (uuid === null) throw "Wrongly Formated Token. (/buy route)";
+
     var user = await functions.getPerson(uuid);
 
-    // if (!user) {
-    //   res.statusCode(404);
-    //   res.send({ status: "Failure", message: "No user with that uuid." });
-    //   /*Return invalid token message*/
-    //   return;
-    // }
-    console.log(user);
-
     await shopFunctions.buyCart(user.IDTEAM, itemList);
-
-    res.statusCode(200);
+    res.status(200);
     res.send({ status: "Success", message: "Buy concluded successfuly." });
-  } catch (e) {
-    res.statusCode(404);
-    res.send({ status: "Failure", message: e });
+  } catch (error) {
+    res.status(400);
+    res.send({ status: "Failure", message: error });
   }
 });
 
@@ -51,9 +36,7 @@ shopRoutes.route("/updateStock").post(async function (req, res) {
 
     var uuid = security.decode_uuid(token);
 
-    if (uuid === null) {
-      //error
-    }
+    if (uuid === null) throw "Wrongly Formated Token. (/buy route)"
 
     var user = await functions.getPerson(uuid);
 

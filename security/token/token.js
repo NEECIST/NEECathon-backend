@@ -1,13 +1,19 @@
 import jwt_decode from "jwt-decode";
 import jwt from "jsonwebtoken"
 
+/**
+ * Decodes a JWT token and validates it
+ * 
+ * @param {JWT} token Target token
+ * @return {Object} Decoded JWT (or not)
+ */
 export function decode_token(token){
     if(validate_token(token)===1){
         try{
             var decoded = jwt_decode(token)
         }catch(e){
             decoded=null;
-            console.log(e);
+            throw e;
         }finally{
             return decoded
         }
@@ -16,13 +22,19 @@ export function decode_token(token){
     }
 }
 
+/**
+ * Decodes the header of a JWT token and validates it
+ * 
+ * @param {JWT} token Target token
+ * @return {Object} Decoded JWT (or not)
+ */
 export function decode_header(token){
     if(validate_token(token)===1){        
         try{
             var decoded = jwt_decode(token,{header: true})
         }catch(e){
             decoded=null;
-            console.log(e);
+            throw e;
         }finally{
             return decoded
         }
@@ -31,13 +43,19 @@ export function decode_header(token){
     }
 }
 
+/**
+ * Decodes the uuid of a JWT token and validates it
+ * 
+ * @param {JWT} token Target token
+ * @return {Object} Decoded JWT (or not)
+ */
 export function decode_uuid(token){
     if(validate_token(token)===1){  
         try{
             var decoded = jwt_decode(token)
         }catch(e){
             decoded=null;
-            console.log(e);
+            throw e;
         }finally{
             if(decoded!==null){
                 return decoded.sub
@@ -50,13 +68,19 @@ export function decode_uuid(token){
     }
 }
 
+/**
+ * Decodes the role of a JWT token and validates it
+ * 
+ * @param {JWT} token Target token
+ * @return {Object} Decoded JWT (or not)
+ */
 export function decode_role(token){
     if(validate_token(token)===1){
         try{
             var decoded = jwt_decode(token)
         }catch(e){
             decoded=null;
-            console.log(e);
+            throw e;
         }finally{
             if(decoded!==null){
                 return decoded.aud
@@ -69,13 +93,19 @@ export function decode_role(token){
     }
 }
 
+/**
+ * Decodes the email of a JWT token and validates it
+ * 
+ * @param {JWT} token Target token
+ * @return {Object} Decoded JWT (or not)
+ */
 export function decode_email(token){
     if(validate_token(token)===1){
         try{
             var decoded = jwt_decode(token)
         }catch(e){
             decoded=null;
-            console.log(e);
+            throw e;
         }finally{
             if(decoded!==null){
                 return decoded.email
@@ -88,15 +118,20 @@ export function decode_email(token){
     }
 }
 
-export function validate_token(token){  //NOTE chamar esta função no inicio de cada uma das outras funcoes acima
+/**
+ * Validates a JWT token
+ * 
+ * @param {JWT} token Target token
+ * @return {number} 1- valid, 0-not valid
+ */
+export function validate_token(token){
     var privateKey=process.env.JWT_SECRET;
     var validity=0;
     try {
-        var decoded = jwt.verify(token, privateKey);
+        jwt.verify(token, privateKey);
         validity=1;
-        console.log(decoded,"jwt validate token")
     }catch(e) {
-        console.log(e);
+        throw e;
     }finally{
         return validity;
     }
