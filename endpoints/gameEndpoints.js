@@ -420,7 +420,7 @@ export async function cardLC(teamID) {
           if(error1) throw error1
           // Negative ammount -> team gives money
           if (card.AMMOUNT < 0) {
-            Teams.forEach(team => {
+            Teams.forEach(async team => {
               if (typeof team !== 'undefined' && team!==null) {
                 await transferCoins(team.IDTEAM, teamID, 0 - card.AMMOUNT);
               }else{
@@ -429,7 +429,7 @@ export async function cardLC(teamID) {
             });
           // Positive ammount -> team recieves money
           } else {
-            Teams.forEach(team => {
+            Teams.forEach(async team => {
               if (typeof team !== 'undefined' && team!==null) {
                 await transferCoins(teamID, team.IDTEAM, card.AMMOUNT);
               }else{
