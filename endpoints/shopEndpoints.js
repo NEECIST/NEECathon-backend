@@ -36,6 +36,7 @@ export async function buyCart(teamID, cart) {
   if (Team !== undefined) {
     //NOTE usar locks ou transaction
     try {
+      /*
       for (var i = 0; i < cart.length; i++) {
         Component.push(await functions.getComponent(cart[i].id));
         if (Component[i] === undefined || Component[i].STOCK < cart[i].quantity) {
@@ -57,6 +58,25 @@ export async function buyCart(teamID, cart) {
       }
 
       functions.subtractCoins(Team, cost);
+      */
+      var quantity;
+      var id;
+
+      for (var i = 0; i < cart.length; i++) {
+        Component.push(await functions.getComponent(cart[i].id));
+        if (Component[i] === undefined || Component[i].STOCK < cart[i].quantity) {
+          console.log("Component not found or overstock!");
+          throw "Component not found or overstock!";
+        }
+        quantity[i] = cart[i].quantity;
+        id[i] = cart[i].id;
+        cost += Component[i].PRICE * cart[i].quantity;
+      }s
+      if (cost > Team.CASH) {
+        console.log("Overbudget!");
+        throw "Overbuget";
+      }
+
     } catch (e) {
       throw e;
     }
