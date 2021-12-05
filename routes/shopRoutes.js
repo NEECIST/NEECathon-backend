@@ -17,8 +17,6 @@ shopRoutes.route("/buy").post(async function (req, res) {
 
     var user = await functions.getPerson(uuid);
 
-    console.log(user);
-
     await shopFunctions.buyCart(user.IDTEAM, itemList);
     res.status(200);
     res.send({ status: "Success", message: "Buy concluded successfuly." });
