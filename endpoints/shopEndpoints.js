@@ -39,31 +39,29 @@ export async function buyCart(teamID, cart) {
 
   if (typeof Team !== 'undefined' && Team !==null) {
     try {
+      let quantity = [];
+      let id = [];
+
       for (var i = 0; i < cart.length; i++) {
         Component.push(await functions.getComponent(cart[i].id));
-        if (Component[i] === null || typeof Component[i] === 'undefined' || Component[i].STOCK < cart[i].quantity) {
+        if (Component[i] === undefined || Component[i].STOCK < cart[i].quantity) {
           console.log("Component not found or overstock!");
-          throw "Component" + Component[i].NAME + "not found or overstock! (buyCart)";
+          throw "Component not found or overstock!";
         }
+        console.log(cart[i].quantity);
+        quantity.push(cart[i].quantity);
+        id.push(cart[i].id);
         cost += Component[i].PRICE * cart[i].quantity;
       }
       if (cost > Team.CASH) {
         console.log("Overbudget!");
-        throw "Overbuget! (buyCart)";
+        throw "Overbudget";
       }
 
-      var dataInsert = [];
-      for (var i = 0; i < cart.length; i++) {
-        await updateStock(Component[i].IDCOMPONENT, Component[i].STOCK - cart[i].quantity);
-        dataInsert.push({ IDCOMPONENT: Component[i].IDCOMPONENT, IDTEAM: teamID, QUANTITY: cart[i].quantity, LogTime: functions.logTime() });
-      }
-      const { insert, insert_error } = await supabase
-        .from("Components|Team")
-        .insert(dataInsert);
-      console.log(insert, "Insert");
-      if (insert_error) throw "Error: Inserting items to team (buyCart)";
+      const { data, error } = await supabase.rpc('purchase_transaction', { id_team: teamID , id_component: id, quantity: quantity, cart_price: cost});
+      if(error) throw error
+      
 
-      await functions.subtractCoins(Team, cost);
     } catch (error) {
       throw error;
     }
