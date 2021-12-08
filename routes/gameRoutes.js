@@ -65,19 +65,18 @@ mainRoutes.route("/throwDices").post(async function (req, res) {
   let interactable = false;
   try {
     var Person = await functions.getPerson(security.decode_uuid(req.body.token));
-<<<<<<< Updated upstream
     var admin = Person.IDTEAM;
     if (admin !== functions.NEEC_TEAM_ID) throw "User is not Admin!";
     roll_result = await endpoints.throwDices(req.body.team);
-    const { house, house_error } = await supabase.from("Houses").select("*").eq("POSITION", roll_result[1].HOUSE);
-    if (house_error) throw house_error;
-    if(house.TYPE==='house' && house.IDTEAM ===null){
+    const { data: SPBhouse, error } = await supabase.from("Houses").select("*").eq("POSITION", roll_result[1].HOUSE);
+    if (error) throw error;
+    if(SPBhouse.TYPE==='house' && SPBhouse.IDTEAM ===null){
       interactable=true;
-    }else if(house.TYPE==='house' && house.IDTEAM !==null){
-      await endpoints.transferCoins(roll_result[1], house.IDTEAM, house.PRICE);
+    }else if(SPBhouse.TYPE==='house' && SPBhouse.IDTEAM !==null){
+      await endpoints.transferCoins(roll_result[1], SPBhouse.IDTEAM, SPBhouse.PRICE);
     }
     endpoints.lastRoundTime();
-    res.send({ status: "Success", value: roll_result[0] , team: roll_result[1], house: house, interactable: interactable});
+    res.send({ status: "Success", value: roll_result[0] , team: roll_result[1], house: SPBhouse, interactable: interactable});
   } catch (e) {
     res.status(400);
     res.send({ status: "Failure", message: e });

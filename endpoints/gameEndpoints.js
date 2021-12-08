@@ -26,7 +26,6 @@ export function rollTimer() {
  */
 export function lastRoundTime() {
   TIME_LAST_DICE_ROLL = new Date().getTime();
-  console.log(TIME_LAST_DICE_ROLL);
 }
 
 /**
@@ -95,12 +94,11 @@ export async function throwDices(teamID) {
     if (Teams !== null && typeof Teams !== "undefined") {
       var dices = 0;
       dices = functions.getRandomInt(1, 7);
-      console.log(Teams.HOUSE);
+
       var house = Teams.HOUSE + dices >= BOARD_SIZE ? Teams.HOUSE + dices - BOARD_SIZE : Teams.HOUSE + dices;
-      const { data, error, status } = await supabase.from("Teams").update({ HOUSE: house }).eq("IDTEAM", teamID);
+      const { data : SPBhouse, error, status } = await supabase.from("Teams").update({ HOUSE: house }).eq("IDTEAM", teamID);
       if (error) throw error;
-      console.log(data, status, error);
-      return dices;
+      return [dices,SPBhouse];
     } else {
       throw "Invalid Team";
     }
@@ -141,10 +139,10 @@ export async function transferCoins(minusTeam, plusTeam, cash) {
 
       await functions.subtractCoins(MTeam, cash);
       await functions.addCoins(PTeam, cash);
-      const { insert, insert_error } = await supabase
+      const { data, error } = await supabase
         .from("Team|Team")
         .insert([{ IDTEAM1: minusTeam, IDTEAM2: plusTeam, CASH: cash, LogTime: functions.logTime() }]);
-      if (insert_error) throw insert_error;
+      if (error) throw error;
     } else {
       throw "Invalid Teams";
     }
@@ -170,16 +168,16 @@ export async function buyPatent(teamID, houseID) {
     if (House.IDTEAM === null) {
       if (typeof House !== null && typeof Teams !== null && typeof House !== "undefined" && typeof Teams !== "undefined" && House.TYPE === "house") {
         await functions.subtractCoins(Teams, House.PRICE);
-        const { updated, update_error } = await supabase
+        const { data: SPBhouse, error: house_error } = await supabase
           .from("Houses")
           .update({ IDTEAM: teamID })
           .eq("IDHOUSE", houseID);
-        if (update_error) throw update_error;
+        if (house_error) throw house_error;
 
-        const { insert, insert_error } = await supabase
+        const { data: SPBhouseteam, error: teamhouse_error } = await supabase
           .from("Houses|Team")
           .insert([{ IDHOUSE: houseID, IDTEAM: teamID, LogTime: functions.logTime() }]);
-        if (insert_error) throw insert_error;
+        if (teamhouse_error) throw teamhouse_error;
       } else {
         throw "This house isn´t purchasable";
       }
@@ -257,11 +255,11 @@ export async function removePlayerFromTeam(personID) {
     if (typeof Person !== "undefined" && Person !== null) {
       if (Person.IDTEAM !== null) {
         console.log("Removing...");
-        const { updated, update_error } = await supabase //NOTE verificar se da erro
+        const { data, error } = await supabase //NOTE verificar se da erro
           .from("Persons")
           .update({ IDTEAM: null })
           .eq("IDPERSON", personID);
-        if (update_error) throw update_error;
+        if (error) throw error;
       } else {
         throw "Invalid Team of the person";
       }
@@ -291,11 +289,11 @@ export async function setPlayerTeam(personID, teamID) {
 
     if (typeof Person !== "undefined" && typeof Team !== "undefined" && Person !== null && Team !== null) {
       if (Person.IDTEAM !== null) {
-        const { updated, update_error } = await supabase //NOTE verificar se da erro
+        const { data, error } = await supabase //NOTE verificar se da erro
           .from("Persons")
           .update({ IDTEAM: teamID })
           .eq("IDPERSON", personID);
-        if (update_error) throw update_error;
+        if (error) throw error;
       } else {
         throw "Invalid Team of the person";
       }
@@ -338,11 +336,11 @@ export async function transferHouse(oldTeamID, houseID, finalTeamID) {
     if (OldTeam !== null && House !== null && NewTeam !== null && typeof OldTeam !== "undefined" && typeof House !== "undefined" && typeof NewTeam !== "undefined" && House.TYPE === "house") {
       if (House.IDTEAM !== null) {
         if (House.IDTEAM === oldTeamID) {
-          const { updated, update_error } = await supabase //NOTE verificar se da erro
+          const { data, error } = await supabase
             .from("Houses")
             .update({ IDTEAM: finalTeamID })
             .eq("IDHOUSE", houseID);
-          if (update_error) throw update_error;
+          if (error) throw error;
         } else {
           throw "Team doesn´t own the house";
         }

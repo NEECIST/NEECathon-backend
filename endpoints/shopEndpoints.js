@@ -44,21 +44,16 @@ export async function buyCart(teamID, cart) {
       for (var i = 0; i < cart.length; i++) {
         Component.push(await functions.getComponent(cart[i].id));
         if (Component[i] === undefined || Component[i].STOCK < cart[i].quantity) {
-          console.log("Component not found or overstock!");
           throw "Component not found or overstock!";
         }
-        console.log(cart[i].quantity);
         quantity.push(cart[i].quantity);
         id.push(cart[i].id);
         cost += Component[i].PRICE * cart[i].quantity;
       }
       if (cost > Team.CASH) {
-        console.log("Overbudget!");
         throw "Overbudget";
       }
-      console.log(teamID, id, quantity, cost);
       const { data, error } = await supabase.rpc("purchase_transaction2", { id_team: teamID, id_component: id, quantity: quantity, cart_price: cost });
-      console.log(data, error);
       if (error) throw error;
     } catch (error) {
       throw error;
@@ -85,7 +80,6 @@ export async function requestComponent(teamID, component) {
       const { data, error } = await supabase
         .from("ComponentsRequest")
         .insert([{ NAME: componentName, LINK: componentLink, QUANTITY: componentQuantity, IDTEAM: teamID, created_at: functions.logTime() }]);
-      console.log(data, error);
       if (error) throw error;
     } catch (error) {
       throw error;

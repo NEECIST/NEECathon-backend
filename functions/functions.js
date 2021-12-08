@@ -52,7 +52,7 @@ export function convertTime(time_difference) {
  */
 export async function getTeam(teamID) {
   try{
-    let { data: Team, error } = await supabase //NOTE verificar se da erro
+    let { data: Team, error } = await supabase
     .from("Teams")
     .select("*")
     .eq("IDTEAM", teamID);
@@ -72,7 +72,7 @@ export async function getTeam(teamID) {
  */
 export async function getTeams(teamsID) {
   try{
-    let { data: Teams, error } = await supabase //NOTE verificar se da erro
+    let { data: Teams, error } = await supabase
     .from("Teams")
     .select("*")
     .in("IDTEAM", teamsID);
@@ -91,7 +91,7 @@ export async function getTeams(teamsID) {
  */
 export async function getPerson(personID) {
   try {
-    let { data: Person, error } = await supabase //NOTE verificar se da erro
+    let { data: Person, error } = await supabase
       .from("Persons")
       .select("*")
       .eq("user_id", personID);
@@ -112,7 +112,7 @@ export async function getPerson(personID) {
  */
 export async function getHouse(houseID) {
   try{
-    let { data: House, error } = await supabase //NOTE verificar se da erro
+    let { data: House, error } = await supabase
     .from("Houses")
     .select("*")
     .eq("IDHOUSE", houseID);
@@ -133,7 +133,7 @@ export async function getHouse(houseID) {
  */
 export async function getComponent(componentID) {
   try {
-    let { data: Component, error } = await supabase //NOTE verificar se da erro
+    let { data: Component, error } = await supabase
     .from("Components")
     .select("*")
     .eq("IDCOMPONENT", componentID);
@@ -159,8 +159,8 @@ export async function addCoins(Team, cash) {
     }
 
     Team.CASH += cash;
-    const { updated, update_error } = await supabase.from("Teams").update({ CASH: Team.CASH }).eq("IDTEAM", Team.IDTEAM);
-    if(update_error) throw update_error
+    const { data, error } = await supabase.from("Teams").update({ CASH: Team.CASH }).eq("IDTEAM", Team.IDTEAM);
+    if(error) throw error
   }catch(e){
     throw e;
   }
@@ -180,8 +180,8 @@ export async function subtractCoins(Team, cash) {
     }
     if (Team.CASH - cash >= 0) {
       Team.CASH = (Team.CASH -= cash) < 0 ? 0 : Team.CASH; //REVIEW impedir ação se não for possível subtrair
-      const { updated, update_error } = await supabase.from("Teams").update({ CASH: Team.CASH }).eq("IDTEAM", Team.IDTEAM);
-      if(update_error) throw "Error: Updating team cash (subtractCoins)"
+      const { data, error } = await supabase.from("Teams").update({ CASH: Team.CASH }).eq("IDTEAM", Team.IDTEAM);
+      if(error) throw "Error: Updating team cash (subtractCoins)"
     } else {
       throw "Team doesn't have enough money (subtractCoins)";
     }
@@ -202,8 +202,8 @@ export async function setCoins(Team, cash) {
     if (Team === null || cash === null || typeof Team === "undefined" || typeof cash === "undefined" || cash < 0) {
       throw "Parameters Undefined (setCoins)";
     }
-    const { updated, update_error } = await supabase.from("Teams").update({ CASH: cash }).eq("IDTEAM", Team.IDTEAM);
-    if(update_error) throw update_error
+    const { data, error } = await supabase.from("Teams").update({ CASH: cash }).eq("IDTEAM", Team.IDTEAM);
+    if(error) throw error
   }catch(e){
     throw e;
   }
