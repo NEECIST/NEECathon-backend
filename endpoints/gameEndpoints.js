@@ -126,6 +126,7 @@ export async function throwDices(teamID) {
  export async function playAnalize(house,team) {
   let interactable = false
   let description = ""
+  console.log("Entra", house, team)
   try {
     const { data: SPBhouse, error } = await supabase.from("Houses").select("*").eq("POSITION", house);
     if (error) throw error;
