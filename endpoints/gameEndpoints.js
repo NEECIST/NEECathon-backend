@@ -131,6 +131,8 @@ export async function throwDices(teamID) {
     const { data: SPBhouse, error } = await supabase.from("Houses").select("*").eq("POSITION", house);
     if (error) throw error;
 
+    console.log(SPBhouse,"Target house");
+
     console.log("Checking type:house");
     if(SPBhouse.TYPE==='house' && SPBhouse.IDTEAM ===null){
       interactable = true;

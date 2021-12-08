@@ -72,7 +72,7 @@ mainRoutes.route("/throwDices").post(async function (req, res) {
     let play_result = await endpoints.playAnalize(roll_result[0],req.body.team);
     console.log(play_result,"After play\n")
     endpoints.lastRoundTime();
-    res.send({ status: "Success", value: roll_result[0] , team: roll_result[1], interactable: play_result[0], description: play_result[1]});
+    res.send({ status: "Success", value: roll_result[0] , house: roll_result[1], interactable: play_result[0], description: play_result[1]});
   } catch (e) {
     res.status(400);
     res.send({ status: "Failure", message: e });
