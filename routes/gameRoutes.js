@@ -68,7 +68,7 @@ mainRoutes.route("/throwDices").post(async function (req, res) {
     if (admin !== functions.NEEC_TEAM_ID) throw "User is not Admin!";
     let roll_result = await endpoints.throwDices(req.body.team);
     let play_result = await endpoints.playAnalize(roll_result[1],req.body.team);
-    let final_description = "Rodaste " + roll_result[0] + ". Isso deixa-te na casa de " + roll_result[2] + play_result[1];
+    let final_description = "Rodaste " + roll_result[0] + ". Isso deixa-te na casa de " + play_result[1];
     endpoints.lastRoundTime();
     res.send({ status: "Success", value: roll_result[0] , house: roll_result[1], interactable: play_result[0], description: final_description});
   } catch (e) {

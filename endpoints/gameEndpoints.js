@@ -106,7 +106,7 @@ export async function throwDices(teamID) {
 
       const { data : SPBhouse, error, status } = await supabase.from("Teams").update({ HOUSE: house }).eq("IDTEAM", teamID);
       if (error) throw error;
-      return [dices,house,SPBhouse[0].NAME];
+      return [dices,house];
     } else {
       throw "Invalid Team";
     }
@@ -129,6 +129,7 @@ export async function throwDices(teamID) {
   try {
     const { data: SPBhouse, error } = await supabase.from("Houses").select("*").eq("POSITION", house);
     if (error) throw error;
+    let house_name = SPBhouse[0].NAME;
 
     if(SPBhouse[0].TYPE==='house' && SPBhouse[0].IDTEAM ===null){
       interactable = true;
@@ -162,6 +163,7 @@ export async function throwDices(teamID) {
       description = ".\n\n" + card_description
     }
 
+    let final_description = house_name + description;
     return [interactable,description];
   } catch (e) {
     throw e;
