@@ -132,8 +132,8 @@ export async function throwDices(teamID) {
     if (error) throw error;
 
     console.log(SPBhouse,"Target house");
-
-    console.log(SPBhouse.TYPE==='house',SPBhouse.TYPE==='start',SPBhouse.TYPE==='tax',SPBhouse.TYPE==='prison',SPBhouse.TYPE==='bank',SPBhouse.TYPE==='community')
+    console.log(SPBhouse.TYPE,typeof SPBhouse.TYPE)
+    console.log(SPBhouse.TYPE==="house",SPBhouse.TYPE==="start",SPBhouse.TYPE==="tax",SPBhouse.TYPE==="prison",SPBhouse.TYPE==="bank",SPBhouse.TYPE==="community")
 
     //console.log("Checking type:house");
     if(SPBhouse.TYPE==='house' && SPBhouse.IDTEAM ===null){
