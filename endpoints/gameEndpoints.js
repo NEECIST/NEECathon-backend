@@ -106,7 +106,7 @@ export async function throwDices(teamID) {
 
       const { data : SPBhouse, error, status } = await supabase.from("Teams").update({ HOUSE: house }).eq("IDTEAM", teamID);
       if (error) throw error;
-      return [dices,house];
+      return [dices,house,SPBhouse[0].NAME];
     } else {
       throw "Invalid Team";
     }
@@ -132,33 +132,34 @@ export async function throwDices(teamID) {
 
     if(SPBhouse[0].TYPE==='house' && SPBhouse[0].IDTEAM ===null){
       interactable = true;
-      description = "This patent is available for purchase!";
+      description = ".\n\nEsta patente pode ser comprada!";
     }else if(SPBhouse[0].TYPE==='house' && SPBhouse[0].IDTEAM !==null && team != SPBhouse[0].IDTEAM){
       await transferCoins(team, SPBhouse[0].IDTEAM, SPBhouse[0].PRICE);
-      description = "Payed " + SPBhouse[0].PRICE + " to the owners of the patent.";
+      description = ".\n\nPagaste " + SPBhouse[0].PRICE + " aos proprietários desta patente.";
     }else{
-      description = "You already own this patent!";
+      description = ".\n\nJá és o dono desta patente!";
     }
 
     if(SPBhouse[0].TYPE==='start'){
-      description = "Sitting confortably at the start. Lucky you!";
+      description = ".\n\nA descansar na casa de partida. Que sorte a tua!";
     }
 
     if(SPBhouse[0].TYPE==='tax'){
-      description = "Taxed " + SPBhouse[0].PRICE + " coins.";
+      description = ".\n\nPagaste " + SPBhouse[0].PRICE + " NEECoins em taxas.";
     }
 
     if(SPBhouse[0].TYPE==='prison'){
-      description = "You seem to hear Andy´s voice in your head. Red, it isn´t the time to visit the tree yet!";
+      description = ".\n\nParece que ouves a voz do Andy na tua cabeça. Red, esta não é a melhor altura para visitar a árvore ainda!";
     }
 
     if(SPBhouse[0].TYPE==='bank'){
       await receivePot(team);
-      description = "Money Money Money!";
+      description = ".\n\nNEECoins NEECoins NEECoins! Deve ser tão divertido receber o pote inteiro!";
     }
 
     if(SPBhouse[0].TYPE==='community'){
-      description = await cardLC(team);
+      let card_description = await cardLC(team);
+      description = ".\n\n" + card_description
     }
 
     return [interactable,description];
