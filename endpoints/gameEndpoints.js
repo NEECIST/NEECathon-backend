@@ -134,7 +134,7 @@ export async function throwDices(teamID) {
     if(SPBhouse[0].TYPE==='house' && SPBhouse[0].IDTEAM ===null){
       interactable = true;
       description = "This patent is available for purchase!";
-    }else if(SPBhouse[0].TYPE==='house' && SPBhouse[0].IDTEAM !==null && team !== SPBhouse[0].IDTEAM){
+    }else if(SPBhouse[0].TYPE==='house' && SPBhouse[0].IDTEAM !==null && team != SPBhouse[0].IDTEAM){
       console.log("Transfere de ",team)
       console.log("Para ",SPBhouse[0].IDTEAM)
       await transferCoins(team, SPBhouse[0].IDTEAM, SPBhouse[0].PRICE);
