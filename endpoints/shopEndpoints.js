@@ -12,11 +12,10 @@ export async function updateStock(component_id, ammount) {
   try {
     var stock = ammount;
 
-    let { error } = await supabase
-      .rpc("updatestock", {
-        stock,
-        component_id,
-      });
+    let { error } = await supabase.rpc("updatestock", {
+      stock,
+      component_id,
+    });
 
     if (error) throw "Error: Updating item stock (updateStock)";
   } catch (error) {
@@ -37,7 +36,7 @@ export async function buyCart(teamID, cart) {
   var Component = [];
   var cost = 0;
 
-  if (typeof Team !== 'undefined' && Team !==null) {
+  if (typeof Team !== "undefined" && Team !== null) {
     try {
       let quantity = [];
       let id = [];
@@ -57,13 +56,41 @@ export async function buyCart(teamID, cart) {
         console.log("Overbudget!");
         throw "Overbudget";
       }
-
-      const { data, error } = await supabase.rpc('purchase_transaction', { id_team: teamID , id_component: id, quantity: quantity, cart_price: cost});
-      if(error) throw error
-      
-
+      console.log(teamID, id, quantity, cost);
+      const { data, error } = await supabase.rpc("purchase_transaction2", { id_team: teamID, id_component: id, quantity: quantity, cart_price: cost });
+      console.log(data, error);
+      if (error) throw error;
     } catch (error) {
       throw error;
     }
+  } else {
+    throw "Team Undefined (buyCart)";
+  }
+}
+
+/**
+ * Request Component for buy
+ *
+ * @param {number} teamID id of the team
+ * @param component Component Informations
+ * @return void
+ */
+export async function requestComponent(teamID, component) {
+  if (typeof teamID !== "undefined" && teamID !== null) {
+    try {
+      var componentName = component.name;
+      var componentLink = component.link;
+      var componentQuantity = component.quantity;
+
+      const { data, error } = await supabase
+        .from("ComponentsRequest")
+        .insert([{ NAME: componentName, LINK: componentLink, QUANTITY: componentQuantity, IDTEAM: teamID, created_at: functions.logTime() }]);
+      console.log(data, error);
+      if (error) throw error;
+    } catch (error) {
+      throw error;
+    }
+  } else {
+    throw "Team Undefined (requestComponent)";
   }
 }

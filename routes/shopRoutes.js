@@ -36,21 +36,42 @@ shopRoutes.route("/updateStock").post(async function (req, res) {
 
     var uuid = security.decode_uuid(token);
 
-    if (uuid === null) throw "Wrongly Formated Token. (/buy route)"
+    if (uuid === null) throw "Wrongly Formated Token. (/buy route)";
 
     var user = await functions.getPerson(uuid);
 
-    if(user.IDTEAM === functions.NEEC_TEAM_ID) {
+    if (user.IDTEAM === functions.NEEC_TEAM_ID) {
       await shopFunctions.updateStock(componentId, ammount);
     } else {
-      // error
+      throw "Not Admin";
     }
 
-    res.statusCode(200);
+    res.status(200);
     res.send({ status: "Success", message: "Stock update concluded successfuly." });
-
   } catch (e) {
-    res.statusCode(404);
+    res.status(404);
+    res.send({ status: "Failure", message: e });
+  }
+});
+
+shopRoutes.route("/requestComponent").post(async function (req, res) {
+  try {
+    var body = req.body;
+
+    var token = body.token;
+    var componentObject = body.componentObject;
+    var uuid = security.decode_uuid(token);
+
+    if (uuid === null) throw "Wrongly Formated Token. (/requestComponent route)";
+
+    var user = await functions.getPerson(uuid);
+
+    await shopFunctions.requestComponent(user.IDTEAM, componentObject);
+
+    res.status(200);
+    res.send({ status: "Success", message: "O teu pedido foi guardado com sucesso!" });
+  } catch (e) {
+    res.status(404);
     res.send({ status: "Failure", message: e });
   }
 });

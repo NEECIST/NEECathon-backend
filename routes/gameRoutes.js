@@ -65,6 +65,7 @@ mainRoutes.route("/throwDices").post(async function (req, res) {
   let interactable = false;
   try {
     var Person = await functions.getPerson(security.decode_uuid(req.body.token));
+<<<<<<< Updated upstream
     var admin = Person.IDTEAM;
     if (admin !== functions.NEEC_TEAM_ID) throw "User is not Admin!";
     roll_result = await endpoints.throwDices(req.body.team);
@@ -106,10 +107,10 @@ mainRoutes.route("/buyPatent").post(async function (req, res) {
     var houseID = req.body.houseID;
     if (teamId !== functions.NEEC_TEAM_ID) throw "User is not Admin!";
     await endpoints.buyPatent(teamID, houseID);
-    res.statusCode(200);
+    res.status(200);
     res.send({ status: "Success" });
   } catch (e) {
-    res.statusCode(404);
+    res.status(404);
     res.send({ status: "Failure", message: e });
   }
 });
@@ -121,10 +122,10 @@ mainRoutes.route("/increasePot").post(async function (req, res) {
     var cash = req.body.cash;
     if (teamId !== functions.NEEC_TEAM_ID) throw "User is not Admin!";
     await endpoints.increasePot(teamId, cash);
-    res.statusCode(200);
+    res.status(200);
     res.send({ status: "Success" });
   } catch (e) {
-    res.statusCode(404);
+    res.status(404);
     res.send({ status: "Failure", message: e });
   }
 });
@@ -135,10 +136,10 @@ mainRoutes.route("/receivePot").post(async function (req, res) {
     var teamId = Person.IDTEAM;
     if (teamId !== functions.NEEC_TEAM_ID) throw "User is not Admin!";
     await endpoints.receivePot(teamId);
-    res.statusCode(200);
+    res.status(200);
     res.send({ status: "Success" });
   } catch (e) {
-    res.statusCode(404);
+    res.status(404);
     res.send({ status: "Failure", message: e });
   }
 });
@@ -150,10 +151,10 @@ mainRoutes.route("/removePlayerFromTeam").post(async function (req, res) {
     var personId = Person.IDPERSON;
     if (teamId !== functions.NEEC_TEAM_ID) throw "User is not Admin!";
     await endpoints.removePlayerFromTeam(personId);
-    res.statusCode(200);
+    res.status(200);
     res.send({ status: "Success" });
   } catch (e) {
-    res.statusCode(404);
+    res.status(404);
     res.send({ status: "Failure", message: e });
   }
 });
@@ -165,10 +166,10 @@ mainRoutes.route("/setPlayerTeam").post(async function (req, res) {
     var personId = Person.IDPERSON;
     if (teamId !== functions.NEEC_TEAM_ID) throw "User is not Admin!";
     await endpoints.setPlayerTeam(personId, teamId);
-    res.statusCode(200);
+    res.status(200);
     res.send({ status: "Success" });
   } catch (e) {
-    res.statusCode(404);
+    res.status(404);
     res.send({ status: "Failure", message: e });
   }
 });
@@ -182,10 +183,10 @@ mainRoutes.route("/transferHouse").post(async function (req, res) {
     var newTeamID = req.body.newTeamID;
     if (teamId !== functions.NEEC_TEAM_ID) throw "User is not Admin!";
     await endpoints.transferHouse(oldTeamID, houseID, newTeamID);
-    res.statusCode(200);
+    res.status(200);
     res.send({ status: "Success" });
   } catch (e) {
-    res.statusCode(404);
+    res.status(404);
     res.send({ status: "Failure", message: e });
   }
 });
@@ -196,10 +197,10 @@ mainRoutes.route("/cardLC").post(async function (req, res) {
     var teamId = Person.IDTEAM;
     if (teamId !== functions.NEEC_TEAM_ID) throw "User is not Admin!";
     description = await endpoints.cardLC(teamId);
-    res.statusCode(200);
+    res.status(200);
     res.send({ status: "Success", message: description });
   } catch (e) {
-    res.statusCode(404);
+    res.status(404);
     res.send({ status: "Failure", message: e });
   }
 });

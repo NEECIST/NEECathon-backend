@@ -13,9 +13,10 @@ var TIME_LAST_DICE_ROLL = null;
  * @return minutes and seconds until next roll
  */
 export function rollTimer() {
-  var diff = new Date().getTime() - TIME_LAST_DICE_ROLL;
+  var current = new Date().getTime();
+  var diff = current - TIME_LAST_DICE_ROLL;
   var timer = functions.convertTime(diff);
-  if (diff > 3600) return { mm: 0, ss: 0 };
+  if (diff > 3600000) return { mm: 0, ss: 0 };
   return { mm: 59 - timer.mm, ss: 59 - timer.ss };
 }
 /**
@@ -25,6 +26,7 @@ export function rollTimer() {
  */
 export function lastRoundTime() {
   TIME_LAST_DICE_ROLL = new Date().getTime();
+  console.log(TIME_LAST_DICE_ROLL);
 }
 
 /**
@@ -93,11 +95,12 @@ export async function throwDices(teamID) {
     if (Teams !== null && typeof Teams !== "undefined") {
       var dices = 0;
       dices = functions.getRandomInt(1, 7);
-
+      console.log(Teams.HOUSE);
       var house = Teams.HOUSE + dices >= BOARD_SIZE ? Teams.HOUSE + dices - BOARD_SIZE : Teams.HOUSE + dices;
-      const { updated, update_error } = await supabase.from("Teams").update({ HOUSE: house }).eq("IDTEAM", teamID);
-      if (update_error) throw update_error;
-      return [dices,updated]
+      const { data, error, status } = await supabase.from("Teams").update({ HOUSE: house }).eq("IDTEAM", teamID);
+      if (error) throw error;
+      console.log(data, status, error);
+      return dices;
     } else {
       throw "Invalid Team";
     }
