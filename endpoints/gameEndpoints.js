@@ -97,6 +97,7 @@ export async function throwDices(teamID) {
       var house = Teams.HOUSE + dices >= BOARD_SIZE ? Teams.HOUSE + dices - BOARD_SIZE : Teams.HOUSE + dices;
       const { updated, update_error } = await supabase.from("Teams").update({ HOUSE: house }).eq("IDTEAM", teamID);
       if (update_error) throw update_error;
+      return [dices,updated]
     } else {
       throw "Invalid Team";
     }
@@ -137,7 +138,7 @@ export async function transferCoins(minusTeam, plusTeam, cash) {
 
       await functions.subtractCoins(MTeam, cash);
       await functions.addCoins(PTeam, cash);
-      const { insert, insert_error } = await supabase //NOTE verificar se da erro
+      const { insert, insert_error } = await supabase
         .from("Team|Team")
         .insert([{ IDTEAM1: minusTeam, IDTEAM2: plusTeam, CASH: cash, LogTime: functions.logTime() }]);
       if (insert_error) throw insert_error;
@@ -166,13 +167,13 @@ export async function buyPatent(teamID, houseID) {
     if (House.IDTEAM === null) {
       if (typeof House !== null && typeof Teams !== null && typeof House !== "undefined" && typeof Teams !== "undefined" && House.TYPE === "house") {
         await functions.subtractCoins(Teams, House.PRICE);
-        const { updated, update_error } = await supabase //NOTE verificar se da erro
+        const { updated, update_error } = await supabase
           .from("Houses")
           .update({ IDTEAM: teamID })
           .eq("IDHOUSE", houseID);
         if (update_error) throw update_error;
 
-        const { insert, insert_error } = await supabase //NOTE verificar se da erro
+        const { insert, insert_error } = await supabase
           .from("Houses|Team")
           .insert([{ IDHOUSE: houseID, IDTEAM: teamID, LogTime: functions.logTime() }]);
         if (insert_error) throw insert_error;

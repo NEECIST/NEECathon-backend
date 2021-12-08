@@ -64,11 +64,11 @@ mainRoutes.route("/setCoins").post(async function (req, res) {
 mainRoutes.route("/throwDices").post(async function (req, res) {
   try {
     var Person = await functions.getPerson(security.decode_uuid(req.body.token));
-    var teamId = Person.IDTEAM;
-    if (teamId !== functions.NEEC_TEAM_ID) throw "User is not Admin!";
-    roll = await endpoints.throwDices(teamId);
+    var admin = Person.IDTEAM;
+    if (admin !== functions.NEEC_TEAM_ID) throw "User is not Admin!";
+    roll_result = await endpoints.throwDices(req.body.team);
     endpoints.lastRoundTime();
-    res.send({ status: "Success", value: roll });
+    res.send({ status: "Success", value: roll_result[0] , team: roll_result[1]});
   } catch (e) {
     res.status(400);
     res.send({ status: "Failure", message: e });
