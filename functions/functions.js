@@ -174,6 +174,7 @@ export async function addCoins(Team, cash) {
  * @return void
  */
 export async function subtractCoins(Team, cash) {
+  console.log(Team,cash,"Subtract coins function")
   try {
     if (Team === null || cash === null || typeof Team === "undefined" || typeof cash === "undefined" || cash < 0) {
       throw "Parameters Undefined (subtractCoins)";
