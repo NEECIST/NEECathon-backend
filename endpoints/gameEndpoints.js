@@ -83,9 +83,11 @@ export async function setCoinsTeam(teamID, cash) {
  * Throw dices and move Team
  *
  * @param {number} teamID id of the team
- * @return void
+ * @return {number} dices value rolled by the dices
+ * @return {object} SPBhouse object of the team playing
  */
 export async function throwDices(teamID) {
+  let house = 0;
   try {
     if (typeof teamID === "undefined" || teamID < 0 || teamID === null) {
       throw "Parameters Undefined (throwDices)";
@@ -95,13 +97,71 @@ export async function throwDices(teamID) {
       var dices = 0;
       dices = functions.getRandomInt(1, 7);
 
-      var house = Teams.HOUSE + dices >= BOARD_SIZE ? Teams.HOUSE + dices - BOARD_SIZE : Teams.HOUSE + dices;
+      if(Teams.HOUSE + dices >= BOARD_SIZE){
+        teamAddCoins(teamID, START_CASH);
+        house = Teams.HOUSE + dices - BOARD_SIZE;
+      }else{
+        house = Teams.HOUSE + dices;
+      }
+
       const { data : SPBhouse, error, status } = await supabase.from("Teams").update({ HOUSE: house }).eq("IDTEAM", teamID);
       if (error) throw error;
       return [dices,SPBhouse];
     } else {
       throw "Invalid Team";
     }
+  } catch (e) {
+    throw e;
+  }
+}
+
+/**
+ * Analizes the possible interactions for a play on the board
+ *
+ * @param {number} house position of the team in the board
+ * @param {number} team target team
+ * @return {boolean} interactable Is the house purchasable
+ * @return {string} description action description
+ */
+ export async function playAnalize(house,team) {
+  let interactable = false
+  let description = ""
+  try {
+    const { data: SPBhouse, error } = await supabase.from("Houses").select("*").eq("POSITION", house);
+    if (error) throw error;
+
+    if(SPBhouse.TYPE==='house' && SPBhouse.IDTEAM ===null){
+      interactable = true;
+      description = "This patent is available for purchase!";
+    }else if(SPBhouse.TYPE==='house' && SPBhouse.IDTEAM !==null && team !== SPBhouse.IDTEAM){
+      await transferCoins(team, SPBhouse.IDTEAM, SPBhouse.PRICE);
+      description = "Payed " + SPBhouse.PRICE + " to the owners of the patent.";
+    }else{
+      description = "You already own this patent!";
+    }
+
+    if(SPBhouse.TYPE==='start'){
+      description = "Sitting confortably at the start. Lucky you!";
+    }
+
+    if(SPBhouse.TYPE==='tax'){
+      description = "Taxed " + SPBhouse.PRICE + " coins.";
+    }
+
+    if(SPBhouse.TYPE==='prison'){
+      description = "You seem to hear Andy´s voice in your head. Red, it isn´t the time to visit the tree yet!";
+    }
+
+    if(SPBhouse.TYPE==='bank'){
+      await receivePot(team);
+      description = "Money Money Money!";
+    }
+
+    if(SPBhouse.TYPE==='community'){
+      description = await cardLC(team);
+    }
+
+    return [interactable,description];
   } catch (e) {
     throw e;
   }
@@ -255,7 +315,7 @@ export async function removePlayerFromTeam(personID) {
     if (typeof Person !== "undefined" && Person !== null) {
       if (Person.IDTEAM !== null) {
         console.log("Removing...");
-        const { data, error } = await supabase //NOTE verificar se da erro
+        const { data, error } = await supabase
           .from("Persons")
           .update({ IDTEAM: null })
           .eq("IDPERSON", personID);
@@ -289,7 +349,7 @@ export async function setPlayerTeam(personID, teamID) {
 
     if (typeof Person !== "undefined" && typeof Team !== "undefined" && Person !== null && Team !== null) {
       if (Person.IDTEAM !== null) {
-        const { data, error } = await supabase //NOTE verificar se da erro
+        const { data, error } = await supabase
           .from("Persons")
           .update({ IDTEAM: teamID })
           .eq("IDPERSON", personID);
@@ -377,16 +437,16 @@ export async function shuffleCards() {
  * Take a card from the deck
  *
  * @param {number} teamID id of the team
- * @return description of the card
+ * @return {string} description of the card
  */
 export async function cardLC(teamID) {
   try {
-    if (typeof teamID === "undefined" || teamID === null) {
+    if (typeof teamID === "undefined" || teamID === null || teamID < 0) {
       throw "Parameters Undefined (cardLC)";
     }
 
-    var Team = await functions.getTeam(teamID);
-    var card;
+    let Team = await functions.getTeam(teamID);
+    let card;
 
     if (!Deck.length) {
       await shuffleCards();
@@ -417,8 +477,8 @@ export async function cardLC(teamID) {
 
         case 3: // Give/recieve money to/from teams
           // Select all valid teams that are not the playing team
-          let { data: Teams, error1 } = await supabase.from("Teams").select("*").gt("IDTEAM", 1).neq("IDTEAM", teamID);
-          if (error1) throw error1;
+          let { data: Teams, error: error3 } = await supabase.from("Teams").select("*").gt("IDTEAM", 1).neq("IDTEAM", teamID);
+          if (error3) throw error3;
           // Negative ammount -> team gives money
           if (card.AMMOUNT < 0) {
             Teams.forEach(async (team) => {
@@ -442,14 +502,13 @@ export async function cardLC(teamID) {
 
         case 4: // Move to relative house
           Team.HOUSE += card.AMMOUNT;
-
           // Team finishes a lap
           if (Team.HOUSE >= BOARD_SIZE) {
             Team.HOUSE -= BOARD_SIZE;
             Team.CASH += START_CASH;
           }
-          const { data2, error2 } = await supabase.from("Teams").update({ HOUSE: Team.HOUSE, CASH: Team.CASH }).eq("IDTEAM", teamID);
-          if (error2) throw error2;
+          const { data : data4, error: error4 } = await supabase.from("Teams").update({ HOUSE: Team.HOUSE, CASH: Team.CASH }).eq("IDTEAM", teamID);
+          if (error4) throw error4;
           break;
 
         case 5: // Move to specific house
@@ -461,8 +520,8 @@ export async function cardLC(teamID) {
           if (Team.HOUSE < current_house && Team.HOUSE != 6) {
             Team.CASH += START_CASH;
           }
-          const { data3, error3 } = await supabase.from("Teams").update({ HOUSE: Team.HOUSE, CASH: Team.CASH }).eq("IDTEAM", teamID);
-          if (error3) throw error3;
+          const { data: data5, error: error5 } = await supabase.from("Teams").update({ HOUSE: Team.HOUSE, CASH: Team.CASH }).eq("IDTEAM", teamID);
+          if (error5) throw error5;
           break;
 
         default:
