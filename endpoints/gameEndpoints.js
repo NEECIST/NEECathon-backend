@@ -106,7 +106,7 @@ export async function throwDices(teamID) {
 
       const { data : SPBhouse, error, status } = await supabase.from("Teams").update({ HOUSE: house }).eq("IDTEAM", teamID);
       if (error) throw error;
-      return [dices,SPBhouse];
+      return [dices,house];
     } else {
       throw "Invalid Team";
     }
