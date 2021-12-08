@@ -62,13 +62,21 @@ mainRoutes.route("/setCoins").post(async function (req, res) {
 });
 
 mainRoutes.route("/throwDices").post(async function (req, res) {
+  let interactable = false;
   try {
     var Person = await functions.getPerson(security.decode_uuid(req.body.token));
     var admin = Person.IDTEAM;
     if (admin !== functions.NEEC_TEAM_ID) throw "User is not Admin!";
     roll_result = await endpoints.throwDices(req.body.team);
+    const { house, house_error } = await supabase.from("Houses").select("*").eq("POSITION", roll_result[1].HOUSE);
+    if (house_error) throw house_error;
+    if(house.TYPE==='house' && house.IDTEAM ===null){
+      interactable=true;
+    }else if(house.TYPE==='house' && house.IDTEAM !==null){
+      await endpoints.transferCoins(roll_result[1], house.IDTEAM, house.PRICE);
+    }
     endpoints.lastRoundTime();
-    res.send({ status: "Success", value: roll_result[0] , team: roll_result[1]});
+    res.send({ status: "Success", value: roll_result[0] , team: roll_result[1], house: house, interactable: interactable});
   } catch (e) {
     res.status(400);
     res.send({ status: "Failure", message: e });
