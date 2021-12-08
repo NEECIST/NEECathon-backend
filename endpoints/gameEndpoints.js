@@ -126,14 +126,14 @@ export async function throwDices(teamID) {
  export async function playAnalize(house,team) {
   let interactable = false
   let description = ""
-  console.log("Entra", house, team)
+  //console.log("Entra", house, team)
   try {
     const { data: SPBhouse, error } = await supabase.from("Houses").select("*").eq("POSITION", house);
     if (error) throw error;
 
     console.log(SPBhouse,"Target house");
 
-    console.log("Checking type:house");
+    //console.log("Checking type:house");
     if(SPBhouse.TYPE==='house' && SPBhouse.IDTEAM ===null){
       interactable = true;
       description = "This patent is available for purchase!";
@@ -144,33 +144,33 @@ export async function throwDices(teamID) {
       description = "You already own this patent!";
     }
 
-    console.log("Checking type:start");
+    //console.log("Checking type:start");
     if(SPBhouse.TYPE==='start'){
       description = "Sitting confortably at the start. Lucky you!";
     }
 
-    console.log("Checking type:tax");
+    //console.log("Checking type:tax");
     if(SPBhouse.TYPE==='tax'){
       description = "Taxed " + SPBhouse.PRICE + " coins.";
     }
 
-    console.log("Checking type:prison");
+    //console.log("Checking type:prison");
     if(SPBhouse.TYPE==='prison'){
       description = "You seem to hear Andy´s voice in your head. Red, it isn´t the time to visit the tree yet!";
     }
 
-    console.log("Checking type:bank");
+    //console.log("Checking type:bank");
     if(SPBhouse.TYPE==='bank'){
       await receivePot(team);
       description = "Money Money Money!";
     }
 
-    console.log("Checking type:community");
+    //console.log("Checking type:community");
     if(SPBhouse.TYPE==='community'){
       description = await cardLC(team);
     }
 
-    console.log("Play result",interactable,description);
+    //console.log("Play result",interactable,description);
     return [interactable,description];
   } catch (e) {
     throw e;
