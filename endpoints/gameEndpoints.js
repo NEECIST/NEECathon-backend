@@ -131,44 +131,44 @@ export async function throwDices(teamID) {
     const { data: SPBhouse, error } = await supabase.from("Houses").select("*").eq("POSITION", house);
     if (error) throw error;
 
-    console.log(SPBhouse,"Target house");
-    console.log(SPBhouse.TYPE,typeof SPBhouse.TYPE)
-    console.log(SPBhouse.TYPE==="house",SPBhouse.TYPE==="start",SPBhouse.TYPE==="tax",SPBhouse.TYPE==="prison",SPBhouse.TYPE==="bank",SPBhouse.TYPE==="community")
+    console.log(SPBhouse[0],"Target house");
+    console.log(SPBhouse[0].TYPE,typeof SPBhouse.TYPE)
+    console.log(SPBhouse[0].TYPE==="house",SPBhouse[0].TYPE==="start",SPBhouse[0].TYPE==="tax",SPBhouse[0].TYPE==="prison",SPBhouse[0].TYPE==="bank",SPBhouse[0].TYPE==="community")
 
     //console.log("Checking type:house");
-    if(SPBhouse.TYPE==='house' && SPBhouse.IDTEAM ===null){
+    if(SPBhouse[0].TYPE==='house' && SPBhouse[0].IDTEAM ===null){
       interactable = true;
       description = "This patent is available for purchase!";
-    }else if(SPBhouse.TYPE==='house' && SPBhouse.IDTEAM !==null && team !== SPBhouse.IDTEAM){
-      await transferCoins(team, SPBhouse.IDTEAM, SPBhouse.PRICE);
-      description = "Payed " + SPBhouse.PRICE + " to the owners of the patent.";
+    }else if(SPBhouse[0].TYPE==='house' && SPBhouse[0].IDTEAM !==null && team !== SPBhouse[0].IDTEAM){
+      await transferCoins(team, SPBhouse[0].IDTEAM, SPBhouse[0].PRICE);
+      description = "Payed " + SPBhouse[0].PRICE + " to the owners of the patent.";
     }else{
       description = "You already own this patent!";
     }
 
     //console.log("Checking type:start");
-    if(SPBhouse.TYPE==='start'){
+    if(SPBhouse[0].TYPE==='start'){
       description = "Sitting confortably at the start. Lucky you!";
     }
 
     //console.log("Checking type:tax");
-    if(SPBhouse.TYPE==='tax'){
-      description = "Taxed " + SPBhouse.PRICE + " coins.";
+    if(SPBhouse[0].TYPE==='tax'){
+      description = "Taxed " + SPBhouse[0].PRICE + " coins.";
     }
 
     //console.log("Checking type:prison");
-    if(SPBhouse.TYPE==='prison'){
+    if(SPBhouse[0].TYPE==='prison'){
       description = "You seem to hear Andy´s voice in your head. Red, it isn´t the time to visit the tree yet!";
     }
 
     //console.log("Checking type:bank");
-    if(SPBhouse.TYPE==='bank'){
+    if(SPBhouse[0].TYPE==='bank'){
       await receivePot(team);
       description = "Money Money Money!";
     }
 
     //console.log("Checking type:community");
-    if(SPBhouse.TYPE==='community'){
+    if(SPBhouse[0].TYPE==='community'){
       description = await cardLC(team);
     }
 
