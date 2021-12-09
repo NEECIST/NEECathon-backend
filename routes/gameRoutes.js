@@ -67,10 +67,10 @@ mainRoutes.route("/throwDices").post(async function (req, res) {
     var admin = Person.IDTEAM;
     if (admin !== functions.NEEC_TEAM_ID) throw "User is not Admin!";
     let roll_result = await endpoints.throwDices(req.body.team);
-    let play_result = await endpoints.playAnalize(roll_result[1],req.body.team);
+    let play_result = await endpoints.playAnalize(roll_result[1], req.body.team);
     let final_description = "Rodaste " + roll_result[0] + ". Isso deixa-te na casa de " + play_result[1];
     endpoints.lastRoundTime();
-    res.send({ status: "Success", value: roll_result[0] , house: roll_result[1], interactable: play_result[0], description: final_description});
+    res.send({ status: "Success", teamID: req.body.team, interactable: play_result[0], description: final_description });
   } catch (e) {
     res.status(400);
     res.send({ status: "Failure", message: e });
@@ -96,14 +96,14 @@ mainRoutes.route("/transferCoins").get(async function (req, res) {
 mainRoutes.route("/buyPatent").post(async function (req, res) {
   try {
     var Person = await functions.getPerson(security.decode_uuid(req.body.token));
-    var teamId = Person.IDTEAM;
-    var houseID = req.body.houseID;
-    if (teamId !== functions.NEEC_TEAM_ID) throw "User is not Admin!";
-    await endpoints.buyPatent(teamID, houseID);
+    var teamID = req.body.team;
+    if (Person.IDTEAM !== functions.NEEC_TEAM_ID) throw "User is not Admin!";
+    await endpoints.buyPatent(teamID);
     res.status(200);
     res.send({ status: "Success" });
   } catch (e) {
-    res.status(404);
+    console.log(e);
+    res.status(400);
     res.send({ status: "Failure", message: e });
   }
 });

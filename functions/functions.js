@@ -3,7 +3,7 @@ export var NEEC_TEAM_ID = 1;
 
 /**
  * Generates a random number between min(including) and max(excluding)
- * 
+ *
  * @param {number} min minimum number
  * @param {number} max maximum number
  * @return {number} random number
@@ -16,7 +16,7 @@ export function getRandomInt(min, max) {
 
 /**
  * Creates a time for the entry logs
- * 
+ *
  * @return {Date} current date
  */
 export function logTime() {
@@ -26,7 +26,7 @@ export function logTime() {
 
 /**
  * Converts a time difference to days,hours,minutes and seconds
- * 
+ *
  * @param {number} time_difference timing difference between two points in time in miliseconds
  * @return {Object} days, hours, minutes, seconds
  */
@@ -46,55 +46,46 @@ export function convertTime(time_difference) {
 
 /**
  * Gets the team corresponding to the ID
- * 
+ *
  * @param {number} teamID Id of the team searched for
  * @return {Object} Team found (or not)
  */
 export async function getTeam(teamID) {
-  try{
-    let { data: Team, error } = await supabase
-    .from("Teams")
-    .select("*")
-    .eq("IDTEAM", teamID);
-    if(error) throw "Team select failed"
+  try {
+    let { data: Team, error } = await supabase.from("Teams").select("*").eq("IDTEAM", teamID);
+    if (error) throw "Team select failed";
     if (Team) return Team[0];
     else return null;
-  }catch(e){
+  } catch (e) {
     throw e;
   }
 }
 
 /**
  * Gets a list of teams
- * 
+ *
  * @param {array} teamsID Array containing the ID of the teams
  * @return {Object} Teams found (or not)
  */
 export async function getTeams(teamsID) {
-  try{
-    let { data: Teams, error } = await supabase
-    .from("Teams")
-    .select("*")
-    .in("IDTEAM", teamsID);
-    if(error) throw "Team select failed"
+  try {
+    let { data: Teams, error } = await supabase.from("Teams").select("*").in("IDTEAM", teamsID);
+    if (error) throw "Team select failed";
     return Teams;
-  }catch(e){
+  } catch (e) {
     throw e;
   }
 }
 
 /**
  * Gets a Person based on a ID
- * 
+ *
  * @param {number} personID Id of the Person searched for
  * @return {Object} Person found (or not)
  */
 export async function getPerson(personID) {
   try {
-    let { data: Person, error } = await supabase
-      .from("Persons")
-      .select("*")
-      .eq("user_id", personID);
+    let { data: Person, error } = await supabase.from("Persons").select("*").eq("user_id", personID);
 
     if (error) throw error;
     if (Person) return Person[0];
@@ -106,37 +97,30 @@ export async function getPerson(personID) {
 
 /**
  * Gets a House based on a ID
- * 
+ *
  * @param {number} houseID Id of the House searched for
  * @return {Object} House found (or not)
  */
 export async function getHouse(houseID) {
-  try{
-    let { data: House, error } = await supabase
-    .from("Houses")
-    .select("*")
-    .eq("IDHOUSE", houseID);
+  try {
+    let { data: House, error } = await supabase.from("Houses").select("*").eq("IDHOUSE", houseID);
     if (error) throw error;
     if (House) return House[0];
     else return null;
-  }catch(e){
+  } catch (e) {
     throw e;
   }
-  
 }
 
 /**
  * Gets a Component based on a ID
- * 
+ *
  * @param {number} componentID Id of the Component searched for
  * @return {Object} Component found (or not)
  */
 export async function getComponent(componentID) {
   try {
-    let { data: Component, error } = await supabase
-    .from("Components")
-    .select("*")
-    .eq("IDCOMPONENT", componentID);
+    let { data: Component, error } = await supabase.from("Components").select("*").eq("IDCOMPONENT", componentID);
     if (error) throw error;
     if (Component) return Component[0];
     else return null;
@@ -147,45 +131,41 @@ export async function getComponent(componentID) {
 
 /**
  * Adds coins to a Team
- * 
+ *
  * @param {Object} Team Target team
  * @param {number} cash Amount to add
  * @return void
  */
 export async function addCoins(Team, cash) {
-  try{
+  try {
     if (typeof cash === "undefined" || typeof Team === "undefined" || cash < 0) {
-      throw "Parameters Undefined (addCoins)"
+      throw "Parameters Undefined (addCoins)";
     }
 
     Team.CASH += cash;
     const { data, error } = await supabase.from("Teams").update({ CASH: Team.CASH }).eq("IDTEAM", Team.IDTEAM);
-    if(error) throw error
-  }catch(e){
+    if (error) throw error;
+  } catch (e) {
     throw e;
   }
 }
 
 /**
  * Subtracts coins to a Team
- * 
+ *
  * @param {Object} Team Target team
  * @param {number} cash Amount to add
  * @return void
  */
 export async function subtractCoins(Team, cash) {
-  console.log(Team,cash,"Subtract coins function")
+  console.log(Team, cash, "Subtract coins function");
   try {
     if (Team === null || cash === null || typeof Team === "undefined" || typeof cash === "undefined" || cash < 0) {
       throw "Parameters Undefined (subtractCoins)";
     }
-    if (Team.CASH - cash >= 0) {
-      Team.CASH = (Team.CASH -= cash) < 0 ? 0 : Team.CASH; //REVIEW impedir ação se não for possível subtrair
-      const { data, error } = await supabase.from("Teams").update({ CASH: Team.CASH }).eq("IDTEAM", Team.IDTEAM);
-      if(error) throw "Error: Updating team cash (subtractCoins)"
-    } else {
-      throw "Team doesn't have enough money (subtractCoins)";
-    }
+    Team.CASH = (Team.CASH -= cash) < 0 ? 0 : Team.CASH; //REVIEW impedir ação se não for possível subtrair
+    const { data, error } = await supabase.from("Teams").update({ CASH: Team.CASH }).eq("IDTEAM", Team.IDTEAM);
+    if (error) throw "Error: Updating team cash (subtractCoins)";
   } catch (error) {
     throw error;
   }
@@ -193,19 +173,19 @@ export async function subtractCoins(Team, cash) {
 
 /**
  * Sets coins of a Team
- * 
+ *
  * @param {Object} Team Target team
  * @param {number} cash Amount to add
  * @return void
  */
 export async function setCoins(Team, cash) {
-  try{
+  try {
     if (Team === null || cash === null || typeof Team === "undefined" || typeof cash === "undefined" || cash < 0) {
       throw "Parameters Undefined (setCoins)";
     }
     const { data, error } = await supabase.from("Teams").update({ CASH: cash }).eq("IDTEAM", Team.IDTEAM);
-    if(error) throw error
-  }catch(e){
+    if (error) throw error;
+  } catch (e) {
     throw e;
   }
 }

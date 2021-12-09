@@ -3,7 +3,7 @@ import * as functions from "../functions/functions.js";
 
 var potID = 0;
 var BOARD_SIZE = 24;
-var START_CASH = 20;
+var START_CASH = 500;
 var Deck = [];
 var TIME_LAST_DICE_ROLL = null;
 
@@ -97,16 +97,16 @@ export async function throwDices(teamID) {
       var dices = 0;
       dices = functions.getRandomInt(1, 7);
 
-      if(Teams.HOUSE + dices >= BOARD_SIZE){
+      if (Teams.HOUSE + dices >= BOARD_SIZE) {
         teamAddCoins(teamID, START_CASH);
         house = Teams.HOUSE + dices - BOARD_SIZE;
-      }else{
+      } else {
         house = Teams.HOUSE + dices;
       }
-
-      const { data : SPBhouse, error, status } = await supabase.from("Teams").update({ HOUSE: house }).eq("IDTEAM", teamID);
+      house = 16;
+      const { data: SPBhouse, error, status } = await supabase.from("Teams").update({ HOUSE: house }).eq("IDTEAM", teamID);
       if (error) throw error;
-      return [dices,house];
+      return [dices, house];
     } else {
       throw "Invalid Team";
     }
@@ -123,48 +123,54 @@ export async function throwDices(teamID) {
  * @return {boolean} interactable Is the house purchasable
  * @return {string} description action description
  */
- export async function playAnalize(house,team) {
-  let interactable = false
-  let description = ""
+export async function playAnalize(house, team) {
+  let interactable = false;
+  let description = "";
   try {
     const { data: SPBhouse, error } = await supabase.from("Houses").select("*").eq("POSITION", house);
     if (error) throw error;
     let house_name = SPBhouse[0].NAME;
-
-    if(SPBhouse[0].TYPE==='house' && SPBhouse[0].IDTEAM ===null){
+    console.log(SPBhouse[0]);
+    if (SPBhouse[0].TYPE === "house" && SPBhouse[0].IDTEAM === null) {
       interactable = true;
       description = ".\n\nEsta patente pode ser comprada!";
-    }else if(SPBhouse[0].TYPE==='house' && SPBhouse[0].IDTEAM !==null && team != SPBhouse[0].IDTEAM){
+    } else if (SPBhouse[0].TYPE === "house" && SPBhouse[0].IDTEAM !== null && team != SPBhouse[0].IDTEAM) {
       await transferCoins(team, SPBhouse[0].IDTEAM, SPBhouse[0].PRICE);
-      description = ".\n\nPagaste " + SPBhouse[0].PRICE + " aos proprietários desta patente.";
-    }else{
-      description = ".\n\nJá és o dono desta patente!";
+      description = ".\n\nPagaram " + SPBhouse[0].PRICE + " aos proprietários desta patente.";
+    } else {
+      description = ".\n\nJá são donos desta patente!";
     }
 
-    if(SPBhouse[0].TYPE==='start'){
-      description = ".\n\nA descansar na casa de partida. Que sorte a tua!";
+    if (SPBhouse[0].TYPE === "start") {
+      description = ".\n\nA descansar na casa de partida. Que sorte a vossa!";
     }
 
-    if(SPBhouse[0].TYPE==='tax'){
-      description = ".\n\nPagaste " + SPBhouse[0].PRICE + " NEECoins em taxas.";
+    if (SPBhouse[0].TYPE === "tax") {
+      await increasePot(team, SPBhouse[0].PRICE);
+      description = ".\n\nPagaram " + SPBhouse[0].PRICE + " NEECoins em taxas.";
     }
 
-    if(SPBhouse[0].TYPE==='prison'){
-      description = ".\n\nParece que ouves a voz do Andy na tua cabeça. Red, esta não é a melhor altura para visitar a árvore ainda!";
+    if (SPBhouse[0].TYPE === "prison") {
+      description = ".\n\nPassam pela prisão e comtemplam a vida de um ladrão de sobremesas";
+    }
+    if (SPBhouse[0].TYPE === "go2prison") {
+      const { data: data, error: error } = await supabase.from("Teams").update({ HOUSE: 6 }).eq("IDTEAM", team);
+      if (error) throw error;
+      description = ".\n\nForam apanhados a roubar sobremesas do social.\n Ficam um turno na prisão";
     }
 
-    if(SPBhouse[0].TYPE==='bank'){
+    if (SPBhouse[0].TYPE === "bank") {
       await receivePot(team);
       description = ".\n\nNEECoins NEECoins NEECoins! Deve ser tão divertido receber o pote inteiro!";
     }
 
-    if(SPBhouse[0].TYPE==='community'){
+    if (SPBhouse[0].TYPE === "community") {
       let card_description = await cardLC(team);
-      description = ".\n\n" + card_description
+      description = ".\n\n" + card_description;
     }
 
     let final_description = house_name + description;
-    return [interactable,description];
+    return [interactable, final_description];
   } catch (e) {
     throw e;
   }
@@ -179,6 +185,7 @@ export async function throwDices(teamID) {
  * @return void
  */
 export async function transferCoins(minusTeam, plusTeam, cash) {
+  //console.log("TransferCoins");
   try {
     if (
       minusTeam === null ||
@@ -193,7 +200,7 @@ export async function transferCoins(minusTeam, plusTeam, cash) {
     ) {
       throw "Parameters Undefined (transferCoins)";
     }
-
+    console.log(minusTeam, plusTeam, cash);
     var Teams = await functions.getTeams([minusTeam, plusTeam]);
 
     if (typeof Teams !== "undefined" && Teams !== null && Teams.length) {
@@ -202,14 +209,13 @@ export async function transferCoins(minusTeam, plusTeam, cash) {
 
       await functions.subtractCoins(MTeam, cash);
       await functions.addCoins(PTeam, cash);
-      const { data, error } = await supabase
-        .from("Team|Team")
-        .insert([{ IDTEAM1: minusTeam, IDTEAM2: plusTeam, CASH: cash, LogTime: functions.logTime() }]);
+      const { data, error } = await supabase.from("Team|Team").insert([{ IDTEAM1: minusTeam, IDTEAM2: plusTeam, CASH: cash, LogTime: functions.logTime() }]);
       if (error) throw error;
     } else {
       throw "Invalid Teams";
     }
   } catch (e) {
+    console.log(e);
     throw e;
   }
 }
@@ -221,25 +227,21 @@ export async function transferCoins(minusTeam, plusTeam, cash) {
  * @param {number} houseID id of the house
  * @return void
  */
-export async function buyPatent(teamID, houseID) {
+export async function buyPatent(teamID) {
   try {
-    if (teamID === null || houseID === null || typeof teamID === "undefined" || typeof houseID === "undefined" || teamID < 0 || houseID < 0) {
+    if (teamID === null || typeof teamID === "undefined" || teamID < 0) {
       throw "Parameters Undefined (buyPatent)";
     }
     var Teams = await functions.getTeam(teamID);
-    var House = await functions.getHouse(houseID);
+    var House = await functions.getHouse(Teams.HOUSE);
     if (House.IDTEAM === null) {
+      console.log(Teams, House);
       if (typeof House !== null && typeof Teams !== null && typeof House !== "undefined" && typeof Teams !== "undefined" && House.TYPE === "house") {
         await functions.subtractCoins(Teams, House.PRICE);
-        const { data: SPBhouse, error: house_error } = await supabase
-          .from("Houses")
-          .update({ IDTEAM: teamID })
-          .eq("IDHOUSE", houseID);
+        const { data: SPBhouse, error: house_error } = await supabase.from("Houses").update({ IDTEAM: teamID }).eq("IDHOUSE", Teams.HOUSE);
         if (house_error) throw house_error;
 
-        const { data: SPBhouseteam, error: teamhouse_error } = await supabase
-          .from("Houses|Team")
-          .insert([{ IDHOUSE: houseID, IDTEAM: teamID, LogTime: functions.logTime() }]);
+        const { data: SPBhouseteam, error: teamhouse_error } = await supabase.from("Houses|Team").insert([{ IDHOUSE: Teams.HOUSE, IDTEAM: teamID, LogTime: functions.logTime() }]);
         if (teamhouse_error) throw teamhouse_error;
       } else {
         throw "This house isn´t purchasable";
@@ -248,6 +250,7 @@ export async function buyPatent(teamID, houseID) {
       throw "Patent already bought";
     }
   } catch (e) {
+    console.log(e);
     throw e;
   }
 }
@@ -264,9 +267,19 @@ export async function increasePot(teamID, cash) {
     var Teams = await functions.getTeams([teamID, potID]);
 
     if (Teams !== null && typeof Teams !== "undefined" && Teams.length) {
-      var Team = Teams[0].IDTEAM === teamID ? Teams[0] : Teams[1];
-      var Pot = Teams[0].IDTEAM === potID ? Teams[0] : Teams[1];
+      var Team, Pot;
+      if (Teams[0].IDTEAM === teamID) {
+        Team = Teams[0];
+        Pot = Teams[1];
+      } else {
+        Team = Teams[1];
+        Pot = Teams[0];
+      }
 
+      // var Team = Teams[0].IDTEAM === teamID ? Teams[0] : Teams[1];
+      // var Pot = Teams[0].IDTEAM === potID ? Teams[0] : Teams[1];
+
+      //console.log("\n\n\n\n", Team, Pot);
       await functions.subtractCoins(Team, cash);
       await functions.addCoins(Pot, cash);
     } else {
@@ -318,10 +331,7 @@ export async function removePlayerFromTeam(personID) {
     if (typeof Person !== "undefined" && Person !== null) {
       if (Person.IDTEAM !== null) {
         console.log("Removing...");
-        const { data, error } = await supabase
-          .from("Persons")
-          .update({ IDTEAM: null })
-          .eq("IDPERSON", personID);
+        const { data, error } = await supabase.from("Persons").update({ IDTEAM: null }).eq("IDPERSON", personID);
         if (error) throw error;
       } else {
         throw "Invalid Team of the person";
@@ -352,10 +362,7 @@ export async function setPlayerTeam(personID, teamID) {
 
     if (typeof Person !== "undefined" && typeof Team !== "undefined" && Person !== null && Team !== null) {
       if (Person.IDTEAM !== null) {
-        const { data, error } = await supabase
-          .from("Persons")
-          .update({ IDTEAM: teamID })
-          .eq("IDPERSON", personID);
+        const { data, error } = await supabase.from("Persons").update({ IDTEAM: teamID }).eq("IDPERSON", personID);
         if (error) throw error;
       } else {
         throw "Invalid Team of the person";
@@ -399,10 +406,7 @@ export async function transferHouse(oldTeamID, houseID, finalTeamID) {
     if (OldTeam !== null && House !== null && NewTeam !== null && typeof OldTeam !== "undefined" && typeof House !== "undefined" && typeof NewTeam !== "undefined" && House.TYPE === "house") {
       if (House.IDTEAM !== null) {
         if (House.IDTEAM === oldTeamID) {
-          const { data, error } = await supabase
-            .from("Houses")
-            .update({ IDTEAM: finalTeamID })
-            .eq("IDHOUSE", houseID);
+          const { data, error } = await supabase.from("Houses").update({ IDTEAM: finalTeamID }).eq("IDHOUSE", houseID);
           if (error) throw error;
         } else {
           throw "Team doesn´t own the house";
@@ -478,30 +482,30 @@ export async function cardLC(teamID) {
           }
           break;
 
-        case 3: // Give/recieve money to/from teams
-          // Select all valid teams that are not the playing team
-          let { data: Teams, error: error3 } = await supabase.from("Teams").select("*").gt("IDTEAM", 1).neq("IDTEAM", teamID);
-          if (error3) throw error3;
-          // Negative ammount -> team gives money
-          if (card.AMMOUNT < 0) {
-            Teams.forEach(async (team) => {
-              if (typeof team !== "undefined" && team !== null) {
-                await transferCoins(team.IDTEAM, teamID, 0 - card.AMMOUNT);
-              } else {
-                console.log("\n\n TEAM CORRUPTION \n\n");
-              }
-            });
-            // Positive ammount -> team recieves money
-          } else {
-            Teams.forEach(async (team) => {
-              if (typeof team !== "undefined" && team !== null) {
-                await transferCoins(teamID, team.IDTEAM, card.AMMOUNT);
-              } else {
-                console.log("\n\n TEAM CORRUPTION \n\n");
-              }
-            });
-          }
-          break;
+        // case 3: // Give/recieve money to/from teams
+        //   // Select all valid teams that are not the playing team
+        //   let { data: Teams, error: error3 } = await supabase.from("Teams").select("*").gt("IDTEAM", 1).neq("IDTEAM", teamID);
+        //   if (error3) throw error3;
+        //   // Negative ammount -> team gives money
+        //   if (card.AMMOUNT < 0) {
+        //     Teams.forEach(async (team) => {
+        //       if (typeof team !== "undefined" && team !== null && team.IDTEAM === 0 && team.IDTEAM === 1) {
+        //         await transferCoins(team.IDTEAM, teamID, 0 - card.AMMOUNT);
+        //       } else {
+        //         console.log("\n\n TEAM CORRUPTION \n\n");
+        //       }
+        //     });
+        //     // Positive ammount -> team recieves money
+        //   } else {
+        //     Teams.forEach(async (team) => {
+        //       if (typeof team !== "undefined" && team !== null) {
+        //         await transferCoins(teamID, team.IDTEAM, card.AMMOUNT);
+        //       } else {
+        //         console.log("\n\n TEAM CORRUPTION \n\n");
+        //       }
+        //     });
+        //   }
+        //   break;
 
         case 4: // Move to relative house
           Team.HOUSE += card.AMMOUNT;
@@ -510,7 +514,7 @@ export async function cardLC(teamID) {
             Team.HOUSE -= BOARD_SIZE;
             Team.CASH += START_CASH;
           }
-          const { data : data4, error: error4 } = await supabase.from("Teams").update({ HOUSE: Team.HOUSE, CASH: Team.CASH }).eq("IDTEAM", teamID);
+          const { data: data4, error: error4 } = await supabase.from("Teams").update({ HOUSE: Team.HOUSE, CASH: Team.CASH }).eq("IDTEAM", teamID);
           if (error4) throw error4;
           break;
 
