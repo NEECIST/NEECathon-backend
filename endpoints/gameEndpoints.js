@@ -103,7 +103,7 @@ export async function throwDices(teamID) {
       } else {
         house = Teams.HOUSE + dices;
       }
-      house = 16;
+
       const { data: SPBhouse, error, status } = await supabase.from("Teams").update({ HOUSE: house }).eq("IDTEAM", teamID);
       if (error) throw error;
       return [dices, house];
@@ -131,45 +131,47 @@ export async function playAnalize(house, team) {
     if (error) throw error;
     let house_name = SPBhouse[0].NAME;
     console.log(SPBhouse[0]);
+
     if (SPBhouse[0].TYPE === "house" && SPBhouse[0].IDTEAM === null) {
       interactable = true;
-      description = ".\n\nEsta patente pode ser comprada!";
+      description = "Esta patente pode ser comprada!";
     } else if (SPBhouse[0].TYPE === "house" && SPBhouse[0].IDTEAM !== null && team != SPBhouse[0].IDTEAM) {
+      var price =  parseINT(SPBhouse[0].PRICE *0.1)
       await transferCoins(team, SPBhouse[0].IDTEAM, SPBhouse[0].PRICE);
-      description = ".\n\nPagaram " + SPBhouse[0].PRICE + " aos proprietários desta patente.";
+      description = "Pagaram <b>" + SPBhouse[0].PRICE + "</b> aos proprietários desta patente.";
     } else {
-      description = ".\n\nJá são donos desta patente!";
+      description = "Já são donos desta patente!";
     }
 
     if (SPBhouse[0].TYPE === "start") {
-      description = ".\n\nA descansar na casa de partida. Que sorte a vossa!";
+      description = "A descansar na casa de partida. Que sorte a vossa!";
     }
 
     if (SPBhouse[0].TYPE === "tax") {
       await increasePot(team, SPBhouse[0].PRICE);
-      description = ".\n\nPagaram " + SPBhouse[0].PRICE + " NEECoins em taxas.";
+      description = "Pagaram <b>" + SPBhouse[0].PRICE + "</b> NEECoins em taxas.";
     }
 
     if (SPBhouse[0].TYPE === "prison") {
-      description = ".\n\nPassam pela prisão e comtemplam a vida de um ladrão de sobremesas";
+      description = "Passam pela prisão e comtemplam a vida de um ladrão de sobremesas";
     }
     if (SPBhouse[0].TYPE === "go2prison") {
       const { data: data, error: error } = await supabase.from("Teams").update({ HOUSE: 6 }).eq("IDTEAM", team);
       if (error) throw error;
-      description = ".\n\nForam apanhados a roubar sobremesas do social.\n Ficam um turno na prisão";
+      description = "Foram apanhados a roubar sobremesas do social.\n Ficam um turno na prisão";
     }
 
     if (SPBhouse[0].TYPE === "bank") {
       await receivePot(team);
-      description = ".\n\nNEECoins NEECoins NEECoins! Deve ser tão divertido receber o pote inteiro!";
+      description = "<b>NEECoins NEECoins NEECoins!</b> Deve ser tão divertido receber o pote inteiro!";
     }
 
     if (SPBhouse[0].TYPE === "community") {
       let card_description = await cardLC(team);
-      description = ".\n\n" + card_description;
+      description = "" + card_description;
     }
 
-    let final_description = house_name + description;
+    let final_description = house_name + ".</b><br>" + description;
     return [interactable, final_description];
   } catch (e) {
     throw e;
@@ -268,7 +270,7 @@ export async function increasePot(teamID, cash) {
 
     if (Teams !== null && typeof Teams !== "undefined" && Teams.length) {
       var Team, Pot;
-      if (Teams[0].IDTEAM === teamID) {
+      if (Teams[0].IDTEAM === parseInt(teamID)) {
         Team = Teams[0];
         Pot = Teams[1];
       } else {
@@ -280,8 +282,8 @@ export async function increasePot(teamID, cash) {
       // var Pot = Teams[0].IDTEAM === potID ? Teams[0] : Teams[1];
 
       //console.log("\n\n\n\n", Team, Pot);
-      await functions.subtractCoins(Team, cash);
-      await functions.addCoins(Pot, cash);
+      await functions.subtractCoins(Team, parseInt(cash));
+      await functions.addCoins(Pot, parseInt(cash));
     } else {
       throw "Invalid Teams";
     }

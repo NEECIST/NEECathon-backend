@@ -67,8 +67,8 @@ mainRoutes.route("/throwDices").post(async function (req, res) {
     var admin = Person.IDTEAM;
     if (admin !== functions.NEEC_TEAM_ID) throw "User is not Admin!";
     let roll_result = await endpoints.throwDices(req.body.team);
-    let play_result = await endpoints.playAnalize(roll_result[1], req.body.team);
-    let final_description = "Rodaste " + roll_result[0] + ". Isso deixa-te na casa de " + play_result[1];
+    let play_result = await endpoints.playAnalize(roll_result[1], parseInt(req.body.team));
+    let final_description = "Rodaram um <b>" + roll_result[0] + "</b>. Isso deixa-vos na casa de <b>" + play_result[1];
     endpoints.lastRoundTime();
     res.send({ status: "Success", teamID: req.body.team, interactable: play_result[0], description: final_description });
   } catch (e) {
@@ -77,17 +77,19 @@ mainRoutes.route("/throwDices").post(async function (req, res) {
   }
 });
 
-mainRoutes.route("/transferCoins").get(async function (req, res) {
+mainRoutes.route("/transferCoins").post(async function (req, res) {
   try {
+    console.log(req.body);
     var Person = await functions.getPerson(security.decode_uuid(req.body.token));
     var teamId = Person.IDTEAM;
     if (teamId !== functions.NEEC_TEAM_ID) throw "User is not Admin!";
-    var minusTeam = req.body.minusTeam;
-    var plusTeam = req.body.plusTeam;
-    var value = req.body.value;
+    var minusTeam = parseInt(req.body.minusTeam);
+    var plusTeam = parseInt(req.body.plusTeam);
+    var value = parseInt(req.body.value);
     await endpoints.transferCoins(minusTeam, plusTeam, value);
     res.send({ status: "Success" });
   } catch (e) {
+    console.log(e);
     res.status(400);
     res.send({ status: "Failure", message: e });
   }
